@@ -1,0 +1,19 @@
+{
+  "name": "next-md-negotiate",
+  "version": "0.0.1",
+  "description": "Content negotiation for Next.js - serve Markdown to LLMs, HTML to browsers, from a single URL",
+  "main": "index.js",
+  "keywords": [
+    "nextjs",
+    "markdown",
+    "llm",
+    "content-negotiation",
+    "llm-crawler"
+  ],
+  "author": "Kacper Siniło",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kasin-it/next-md-negotiate"
+  }
+}
