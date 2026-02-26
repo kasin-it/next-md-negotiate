@@ -69,14 +69,21 @@ function logError(msg: string) {
   else console.error(msg);
 }
 
+const dim = (s: string) => `\x1b[2m${s}\x1b[22m`;
+const cyan = (s: string) => `\x1b[36m${s}\x1b[39m`;
+const bold = (s: string) => `\x1b[1m${s}\x1b[22m`;
+
 function showNote(content: string, title: string) {
-  if (isTTY) clack.note(content, title);
-  else {
-    console.log(`\n${title}:\n`);
-    for (const line of content.split("\n")) {
-      console.log(`  ${line}`);
-    }
+  console.log();
+  console.log(isTTY ? `  ${bold(cyan(title))}` : `${title}:`);
+  console.log();
+  for (const line of content.split("\n")) {
+    const colored = isTTY && line.trimStart().startsWith("//")
+      ? dim(`    ${line}`)
+      : `    ${line}`;
+    console.log(colored);
   }
+  console.log();
 }
 
 // --- Codemod helpers ---
