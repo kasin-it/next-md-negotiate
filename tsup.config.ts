@@ -13,5 +13,6 @@ export default defineConfig([
     format: ['esm'],
     outDir: 'dist',
     banner: { js: '#!/usr/bin/env node' },
+    noExternal: [/@clack/],
   },
 ]);

@@ -1,6 +1,8 @@
-import { createInterface } from 'node:readline';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import * as clack from "@clack/prompts";
+
+const isTTY = process.stdin.isTTY;
 
 const APP_ROUTE_HANDLER = `import { createMdHandler } from 'next-md-negotiate';
 import { mdConfig } from '@/md.config';
@@ -46,62 +48,102 @@ export default {
 };
 `;
 
+const BEFORE_FILES_ENTRY = `      beforeFiles: createMarkdownRewrites({
+        routes: ['/products/[productId]', '/blog/[slug]'],
+      }),`;
+
+// --- Output helpers ---
+
+function logSuccess(msg: string) {
+  if (isTTY) clack.log.success(msg);
+  else console.log(`  ${msg}`);
+}
+
+function logWarn(msg: string) {
+  if (isTTY) clack.log.warn(msg);
+  else console.log(`  ${msg}`);
+}
+
+function logInfo(msg: string) {
+  if (isTTY) clack.log.info(msg);
+  else console.log(`  ${msg}`);
+}
+
+function logError(msg: string) {
+  if (isTTY) clack.log.error(msg);
+  else console.error(msg);
+}
+
+function showNote(content: string, title: string) {
+  if (isTTY) clack.note(content, title);
+  else {
+    console.log(`\n${title}:\n`);
+    for (const line of content.split("\n")) {
+      console.log(`  ${line}`);
+    }
+  }
+}
+
+// --- Codemod helpers ---
+
 function printRewritesSnippet() {
-  console.log('\nAdd this to your next.config:\n');
-  console.log("  import { createMarkdownRewrites } from 'next-md-negotiate';");
-  console.log('');
-  console.log('  // inside your config object:');
-  console.log('  async rewrites() {');
-  console.log('    return {');
-  console.log('      beforeFiles: createMarkdownRewrites({');
-  console.log("        routes: ['/products/[productId]', '/blog/[slug]'],");
-  console.log('      }),');
-  console.log('    };');
-  console.log('  },');
+  const snippet = [
+    "import { createMarkdownRewrites } from 'next-md-negotiate';",
+    "",
+    "// inside your config object:",
+    "async rewrites() {",
+    "  return {",
+    "    beforeFiles: createMarkdownRewrites({",
+    "      routes: ['/products/[productId]', '/blog/[slug]'],",
+    "    }),",
+    "  };",
+    "},",
+  ].join("\n");
+
+  showNote(snippet, "Add this to your next.config");
 }
 
 function printMiddlewareInstructions() {
-  console.log('\nAdd a middleware or proxy for content negotiation:\n');
-  console.log('  // middleware.ts (or proxy.ts)');
-  console.log("  import { createMarkdownNegotiator } from 'next-md-negotiate';");
-  console.log('');
-  console.log('  export const middleware = createMarkdownNegotiator({');
-  console.log("    routes: ['/products/[productId]', '/blog/[slug]'],");
-  console.log('  });');
-  console.log('');
-  console.log('  Then define your routes in md.config.ts');
+  const snippet = [
+    "// middleware.ts (or proxy.ts)",
+    "import { createMarkdownNegotiator } from 'next-md-negotiate';",
+    "",
+    "export const middleware = createMarkdownNegotiator({",
+    "  routes: ['/products/[productId]', '/blog/[slug]'],",
+    "});",
+  ].join("\n");
+
+  showNote(snippet, "Add a middleware or proxy for content negotiation");
 }
 
 function printGenericInstructions() {
-  console.log('\nNext step — add rewrites to next.config:\n');
-  console.log('  // next.config.ts');
-  console.log("  import { createMarkdownRewrites } from 'next-md-negotiate';");
-  console.log('');
-  console.log('  export default {');
-  console.log('    async rewrites() {');
-  console.log('      return {');
-  console.log('        beforeFiles: createMarkdownRewrites({');
-  console.log("          routes: ['/products/[productId]', '/blog/[slug]'],");
-  console.log('        }),');
-  console.log('      };');
-  console.log('    },');
-  console.log('  };');
-  console.log('');
-  console.log('  Then define your routes in md.config.ts');
-  console.log('');
-  console.log('  Alternative: use createMarkdownNegotiator in middleware.ts or proxy.ts');
+  const snippet = [
+    "// next.config.ts",
+    "import { createMarkdownRewrites } from 'next-md-negotiate';",
+    "",
+    "export default {",
+    "  async rewrites() {",
+    "    return {",
+    "      beforeFiles: createMarkdownRewrites({",
+    "        routes: ['/products/[productId]', '/blog/[slug]'],",
+    "      }),",
+    "    };",
+    "  },",
+    "};",
+  ].join("\n");
+
+  showNote(snippet, "Next step — add rewrites to next.config");
+  logInfo(
+    "Alternative: use createMarkdownNegotiator in middleware.ts or proxy.ts",
+  );
 }
 
 function findNextConfig(cwd: string): string | null {
-  for (const name of ['next.config.ts', 'next.config.mjs', 'next.config.js']) {
+  for (const name of ["next.config.ts", "next.config.mjs", "next.config.js"]) {
     if (existsSync(join(cwd, name))) return join(cwd, name);
   }
   return null;
 }
-
-const BEFORE_FILES_ENTRY = `      beforeFiles: createMarkdownRewrites({
-        routes: ['/products/[productId]', '/blog/[slug]'],
-      }),`;
 
 function injectIntoExistingRewrites(content: string): string | null {
   const rewritesMatch = /(?:async\s+)?rewrites\s*\(\s*\)\s*\{/.exec(content);
@@ -116,34 +158,39 @@ function injectIntoExistingRewrites(content: string): string | null {
   const returnEnd = bodyStart + returnMatch.index! + returnMatch[0].length;
   const charAfterReturn = content[returnEnd];
 
-  // Object return — inject beforeFiles after the opening brace
-  if (charAfterReturn === '{') {
+  if (charAfterReturn === "{") {
     const insertPos = returnEnd + 1;
     return (
       content.slice(0, insertPos) +
-      '\n' + BEFORE_FILES_ENTRY +
+      "\n" +
+      BEFORE_FILES_ENTRY +
       content.slice(insertPos)
     );
   }
 
-  // Array return — wrap in { beforeFiles: ..., afterFiles: [...] }
-  if (charAfterReturn === '[') {
+  if (charAfterReturn === "[") {
     let depth = 0;
     let i = returnEnd;
     for (; i < content.length; i++) {
-      if (content[i] === '[') depth++;
-      else if (content[i] === ']') {
+      if (content[i] === "[") depth++;
+      else if (content[i] === "]") {
         depth--;
-        if (depth === 0) { i++; break; }
+        if (depth === 0) {
+          i++;
+          break;
+        }
       }
     }
     if (depth !== 0) return null;
 
     const arrayContent = content.slice(returnEnd, i);
     const replacement =
-      '{\n' + BEFORE_FILES_ENTRY +
-      '\n      afterFiles: ' + arrayContent + ',' +
-      '\n    }';
+      "{\n" +
+      BEFORE_FILES_ENTRY +
+      "\n      afterFiles: " +
+      arrayContent +
+      "," +
+      "\n    }";
 
     return content.slice(0, returnEnd) + replacement + content.slice(i);
   }
@@ -155,93 +202,80 @@ function applyRewritesCodemod(cwd: string) {
   const configPath = findNextConfig(cwd);
 
   if (!configPath) {
-    // No config exists — create next.config.ts from scratch
-    writeFileSync(join(cwd, 'next.config.ts'), NEW_NEXT_CONFIG);
-    console.log('\n  Created next.config.ts with rewrites');
+    writeFileSync(join(cwd, "next.config.ts"), NEW_NEXT_CONFIG);
+    logSuccess("Created next.config.ts with rewrites");
     return;
   }
 
-  const content = readFileSync(configPath, 'utf-8');
-  const fileName = configPath.split('/').pop()!;
+  const content = readFileSync(configPath, "utf-8");
+  const fileName = configPath.split("/").pop()!;
 
-  // Already has our import — skip
-  if (content.includes('createMarkdownRewrites')) {
-    console.log(`\n  ${fileName} already has createMarkdownRewrites — skipped`);
+  if (content.includes("createMarkdownRewrites")) {
+    logWarn(`${fileName} already has createMarkdownRewrites — skipped`);
     return;
   }
 
-  // Has an existing rewrites() — try to inject beforeFiles into return value
   if (/rewrites/.test(content)) {
     const injected = injectIntoExistingRewrites(content);
     if (injected) {
       writeFileSync(configPath, REWRITES_IMPORT + injected);
-      console.log(`\n  Updated ${fileName} with rewrites`);
+      logSuccess(`Updated ${fileName} with rewrites`);
       return;
     }
-    console.log(`\n  ${fileName} has a rewrites() function but could not auto-modify it.`);
-    console.log('  Please add the following manually:\n');
+    logWarn(
+      `${fileName} has a rewrites() function but could not auto-modify it.`,
+    );
     printRewritesSnippet();
     return;
   }
 
-  // Try to inject into config object
-  const configObjectPattern = /(?:export\s+default\s*\{|(?:const|let|var)\s+\w+\s*=\s*\{|module\.exports\s*=\s*\{)/;
+  const configObjectPattern =
+    /(?:export\s+default\s*\{|(?:const|let|var)\s+\w+\s*=\s*\{|module\.exports\s*=\s*\{)/;
   const match = configObjectPattern.exec(content);
 
   if (!match) {
-    console.log(`\n  Could not find config object in ${fileName}.`);
-    console.log('  Please add the following manually:\n');
+    logWarn(`Could not find config object in ${fileName}.`);
     printRewritesSnippet();
     return;
   }
 
-  // Inject import at top and rewrites after the opening brace
   const insertPos = match.index! + match[0].length;
   const updated =
     REWRITES_IMPORT +
     content.slice(0, insertPos) +
-    '\n' +
+    "\n" +
     REWRITES_SNIPPET +
-    '\n' +
+    "\n" +
     content.slice(insertPos);
 
   writeFileSync(configPath, updated);
-  console.log(`\n  Updated ${fileName} with rewrites`);
-}
-
-function askChoice(): Promise<string> {
-  const rl = createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise((resolve) => {
-    console.log('\nHow would you like to add content negotiation?\n');
-    console.log('  1. Add rewrites to next.config (recommended)');
-    console.log('  2. Use middleware or proxy (manual)\n');
-    rl.question('Choice (1/2): ', (answer) => {
-      rl.close();
-      resolve(answer.trim());
-    });
-  });
+  logSuccess(`Updated ${fileName} with rewrites`);
 }
 
 async function main() {
   const args = process.argv.slice(2);
   const command = args[0];
 
-  if (command !== 'init') {
-    console.log('Usage: next-md-negotiate init');
+  if (command !== "init") {
+    console.log("Usage: next-md-negotiate init");
     process.exit(1);
   }
 
   const flags = new Set(args.slice(1));
   const cwd = process.cwd();
 
+  if (isTTY) clack.intro("next-md-negotiate init");
+
   // Verify this looks like a Next.js project
-  const pkgPath = join(cwd, 'package.json');
+  const pkgPath = join(cwd, "package.json");
   if (existsSync(pkgPath)) {
     try {
-      const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+      const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
       const deps = { ...pkg.dependencies, ...pkg.devDependencies };
-      if (!deps['next']) {
-        console.error('Error: "next" is not listed in package.json dependencies. Is this a Next.js project?');
+      if (!deps["next"]) {
+        logError(
+          'Error: "next" is not listed in package.json dependencies. Is this a Next.js project?',
+        );
         process.exit(1);
       }
     } catch {
@@ -250,71 +284,90 @@ async function main() {
   }
 
   // Detect project structure
-  const useSrc = existsSync(join(cwd, 'src', 'app')) || existsSync(join(cwd, 'src', 'pages'));
-  const hasAppDir = existsSync(join(cwd, useSrc ? 'src' : '', 'app'));
-  const hasPagesDir = existsSync(join(cwd, useSrc ? 'src' : '', 'pages'));
+  const useSrc =
+    existsSync(join(cwd, "src", "app")) ||
+    existsSync(join(cwd, "src", "pages"));
+  const hasAppDir = existsSync(join(cwd, useSrc ? "src" : "", "app"));
+  const hasPagesDir = existsSync(join(cwd, useSrc ? "src" : "", "pages"));
 
   if (!hasAppDir && !hasPagesDir) {
-    console.error(
-      'Error: Could not find app/ or pages/ directory. Make sure you are in a Next.js project root.'
+    logError(
+      "Error: Could not find app/ or pages/ directory. Make sure you are in a Next.js project root.",
     );
     process.exit(1);
   }
 
-  const configDir = useSrc ? join(cwd, 'src') : cwd;
+  const configDir = useSrc ? join(cwd, "src") : cwd;
 
   try {
     if (hasAppDir) {
-      // App Router: create app/md-api/[...path]/route.ts
-      const appDir = join(cwd, useSrc ? 'src' : '', 'app');
-      const routeDir = join(appDir, 'md-api', '[...path]');
-      const routePath = join(routeDir, 'route.ts');
+      const appDir = join(cwd, useSrc ? "src" : "", "app");
+      const routeDir = join(appDir, "md-api", "[...path]");
+      const routePath = join(routeDir, "route.ts");
 
       if (existsSync(routePath)) {
-        console.log('  Skipped app/md-api/[...path]/route.ts (already exists)');
+        logWarn("Skipped app/md-api/[...path]/route.ts (already exists)");
       } else {
         mkdirSync(routeDir, { recursive: true });
         writeFileSync(routePath, APP_ROUTE_HANDLER);
-        console.log('  Created app/md-api/[...path]/route.ts');
+        logSuccess("Created app/md-api/[...path]/route.ts");
       }
     } else {
-      // Pages Router: create pages/api/md-api/[...path].ts
-      const pagesDir = join(cwd, useSrc ? 'src' : '', 'pages');
-      const apiDir = join(pagesDir, 'api', 'md-api');
-      const routePath = join(apiDir, '[...path].ts');
+      const pagesDir = join(cwd, useSrc ? "src" : "", "pages");
+      const apiDir = join(pagesDir, "api", "md-api");
+      const routePath = join(apiDir, "[...path].ts");
 
       if (existsSync(routePath)) {
-        console.log('  Skipped pages/api/md-api/[...path].ts (already exists)');
+        logWarn("Skipped pages/api/md-api/[...path].ts (already exists)");
       } else {
         mkdirSync(apiDir, { recursive: true });
         writeFileSync(routePath, PAGES_API_HANDLER);
-        console.log('  Created pages/api/md-api/[...path].ts');
+        logSuccess("Created pages/api/md-api/[...path].ts");
       }
     }
 
-    // Create md.config.ts
-    const configPath = join(configDir, 'md.config.ts');
+    const configPath = join(configDir, "md.config.ts");
 
     if (existsSync(configPath)) {
-      console.log('  Skipped md.config.ts (already exists)');
+      logWarn("Skipped md.config.ts (already exists)");
     } else {
       writeFileSync(configPath, MD_CONFIG);
-      console.log('  Created md.config.ts');
+      logSuccess("Created md.config.ts");
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error(`Error: Failed to write files — ${message}`);
+    logError(`Error: Failed to write files — ${message}`);
     process.exit(1);
   }
 
   // Strategy selection
-  if (flags.has('--rewrites')) {
+  if (flags.has("--rewrites")) {
     applyRewritesCodemod(cwd);
-  } else if (flags.has('--middleware')) {
+  } else if (flags.has("--middleware")) {
     printMiddlewareInstructions();
-  } else if (process.stdin.isTTY) {
-    const choice = await askChoice();
-    if (choice === '1') {
+  } else if (isTTY) {
+    const strategy = await clack.select({
+      message: "How would you like to add content negotiation?",
+      options: [
+        {
+          value: "rewrites",
+          label: "Add rewrites to next.config",
+          hint: "recommended",
+        },
+        {
+          value: "middleware",
+          label: "Use middleware or proxy",
+          hint: "manual setup",
+        },
+      ],
+    });
+
+    if (clack.isCancel(strategy)) {
+      clack.cancel("Setup cancelled.");
+      process.exit(0);
+    }
+
+    if (strategy === "rewrites") {
       applyRewritesCodemod(cwd);
     } else {
       printMiddlewareInstructions();
@@ -323,8 +376,8 @@ async function main() {
     printGenericInstructions();
   }
 
-  console.log('');
-  console.log('  Then define your routes in md.config.ts');
+  logInfo("Define your routes in md.config.ts");
+  if (isTTY) clack.outro("You're all set!");
 }
 
 main();
