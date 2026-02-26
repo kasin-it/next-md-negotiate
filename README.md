@@ -65,18 +65,17 @@ Parameters are type-safe — `{ productId }` is inferred from the `[productId]` 
 
 ### 3. Add rewrites to `next.config`
 
-This works with both App Router and Pages Router, on any supported Next.js version.
+This works with both App Router and Pages Router, on any supported Next.js version. Routes are generated directly from your config — no duplication.
 
 ```ts
 // next.config.ts
-import { createMarkdownRewrites } from 'next-md-negotiate';
+import { createRewritesFromConfig } from 'next-md-negotiate';
+import { mdConfig } from './md.config';
 
 export default {
   async rewrites() {
     return {
-      beforeFiles: createMarkdownRewrites({
-        routes: ['/products/[productId]', '/blog/[slug]'],
-      }),
+      beforeFiles: createRewritesFromConfig(mdConfig),
     };
   },
 };
@@ -115,15 +114,14 @@ That's it. Requests with `Accept: text/markdown` get your Markdown. Everything e
 
 ## Alternative: middleware or proxy
 
-The `next.config` rewrites approach covers most use cases. If you need content negotiation to live in your request-handling layer instead — for example, you already have a `middleware.ts` handling auth/i18n/redirects, or you're on Next.js 16+ using `proxy.ts` — use `createMarkdownNegotiator`:
+The `next.config` rewrites approach covers most use cases. If you need content negotiation to live in your request-handling layer instead — for example, you already have a `middleware.ts` handling auth/i18n/redirects, or you're on Next.js 16+ using `proxy.ts` — use `createNegotiatorFromConfig`:
 
 ```ts
 // middleware.ts or proxy.ts
-import { createMarkdownNegotiator } from 'next-md-negotiate';
+import { createNegotiatorFromConfig } from 'next-md-negotiate';
+import { mdConfig } from './md.config';
 
-const md = createMarkdownNegotiator({
-  routes: ['/products/[productId]', '/blog/[slug]'],
-});
+const md = createNegotiatorFromConfig(mdConfig);
 
 export function middleware(request: Request) {
   // Check markdown negotiation first
@@ -133,6 +131,8 @@ export function middleware(request: Request) {
   // ...your other middleware logic (auth, i18n, etc.)
 }
 ```
+
+Routes are read from `mdConfig` — the same single source of truth used by rewrites and the handler.
 
 ### When to use what
 
@@ -185,15 +185,31 @@ Creates a Pages Router API handler for the catch-all route.
 export default createMdApiHandler(mdConfig);
 ```
 
-### `createMarkdownRewrites(options)`
+### `createRewritesFromConfig(mdConfig, options?)`
 
-Generates rewrite rules for `next.config.js`. The recommended approach for most projects.
+Generates Next.js rewrite rules directly from your `mdConfig` array. The recommended approach for most projects.
 
-### `createMarkdownNegotiator(options)`
+```ts
+createRewritesFromConfig(mdConfig)
+```
 
-Creates a handler for `middleware.ts` or `proxy.ts`. Returns a `Response` for markdown requests, or `undefined` to pass through.
+### `createNegotiatorFromConfig(mdConfig, options?)`
+
+Creates a middleware/proxy handler directly from your `mdConfig` array. Returns a `Response` for markdown requests, or `undefined` to pass through.
+
+```ts
+const md = createNegotiatorFromConfig(mdConfig);
+```
 
 **Options (shared by both):**
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `internalPrefix` | `string` | `'/md-api'` | Internal rewrite destination prefix |
+
+### `createMarkdownRewrites(options)` / `createMarkdownNegotiator(options)`
+
+Lower-level versions that accept explicit route arrays. Use the config-based versions above unless you have a reason not to.
 
 | Option | Type | Default | Description |
 |---|---|---|---|

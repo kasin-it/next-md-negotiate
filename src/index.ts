@@ -4,6 +4,7 @@ export { createMdApiHandler } from './createMdApiHandler.js';
 export { createMarkdownRewrites } from './createMarkdownRewrites.js';
 export { createRewritesFromConfig } from './createRewritesFromConfig.js';
 export { createMarkdownNegotiator } from './createMarkdownNegotiator.js';
+export { createNegotiatorFromConfig } from './createNegotiatorFromConfig.js';
 
 export type { ExtractParams, MdVersionHandler } from './types.js';
 export type { MarkdownRewriteOptions } from './createMarkdownRewrites.js';

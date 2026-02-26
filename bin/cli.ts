@@ -100,11 +100,16 @@ function printRewritesSnippet() {
 function printMiddlewareInstructions() {
   const snippet = [
     "// middleware.ts (or proxy.ts)",
-    "import { createMarkdownNegotiator } from 'next-md-negotiate';",
+    "import { createNegotiatorFromConfig } from 'next-md-negotiate';",
+    "import { mdConfig } from './md.config';",
     "",
-    "export const middleware = createMarkdownNegotiator({",
-    "  routes: ['/products/[productId]', '/blog/[slug]'],",
-    "});",
+    "const md = createNegotiatorFromConfig(mdConfig);",
+    "",
+    "export function middleware(request: Request) {",
+    "  const mdResponse = md(request);",
+    "  if (mdResponse) return mdResponse;",
+    "  // ...your other middleware logic",
+    "}",
   ].join("\n");
 
   showNote(snippet, "Add a middleware or proxy for content negotiation");
