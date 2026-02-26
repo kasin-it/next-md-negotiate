@@ -301,14 +301,14 @@ describe('CLI init', () => {
   });
 
   describe('--middleware flag', () => {
-    it('prints both middleware and rewrites instructions', () => {
+    it('prints createNegotiatorFromConfig instructions', () => {
       mkdirSync(join(tmpDir, 'app'), { recursive: true });
       const output = runWithArgs(tmpDir, 'init --middleware');
 
       expect(output).toContain('createNegotiatorFromConfig');
-      expect(output).toContain('createRewritesFromConfig');
       expect(output).toContain('mdConfig');
       expect(output).toContain('middleware');
+      expect(output).not.toContain('createRewritesFromConfig');
     });
   });
 

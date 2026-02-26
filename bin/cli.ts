@@ -98,7 +98,7 @@ function printRewritesSnippet() {
 }
 
 function printMiddlewareInstructions() {
-  const middlewareSnippet = [
+  const snippet = [
     "// middleware.ts (or proxy.ts)",
     "import { createNegotiatorFromConfig } from 'next-md-negotiate';",
     "import { mdConfig } from './md.config';",
@@ -112,22 +112,7 @@ function printMiddlewareInstructions() {
     "}",
   ].join("\n");
 
-  const rewritesSnippet = [
-    "// next.config.ts",
-    "import { createRewritesFromConfig } from 'next-md-negotiate';",
-    "import { mdConfig } from './md.config';",
-    "",
-    "export default {",
-    "  async rewrites() {",
-    "    return {",
-    "      beforeFiles: createRewritesFromConfig(mdConfig),",
-    "    };",
-    "  },",
-    "};",
-  ].join("\n");
-
-  showNote(middlewareSnippet, "Add a middleware or proxy for content negotiation");
-  showNote(rewritesSnippet, "Alternative — add rewrites to next.config instead");
+  showNote(snippet, "Add a middleware or proxy for content negotiation");
 }
 
 function printGenericInstructions() {
