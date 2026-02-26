@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createMarkdownProxy } from '../createMarkdownProxy.js';
-import { createMarkdownMiddleware } from '../createMarkdownMiddleware.js';
+import { createMarkdownNegotiator } from '../createMarkdownNegotiator.js';
 
 function makeRequest(path: string, accept: string) {
   return new Request(`http://localhost${path}`, {
@@ -8,18 +7,14 @@ function makeRequest(path: string, accept: string) {
   });
 }
 
-// Proxy and middleware share the same logic, test both
-describe.each([
-  ['createMarkdownProxy', createMarkdownProxy],
-  ['createMarkdownMiddleware', createMarkdownMiddleware],
-])('%s', (_name, createFn) => {
+describe('createMarkdownNegotiator', () => {
   const options = {
     routes: ['/products/[productId]', '/blog/[slug]'],
   };
 
   describe('markdown requests on matching routes', () => {
     it('returns rewrite response for text/markdown', () => {
-      const handler = createFn(options);
+      const handler = createMarkdownNegotiator(options);
       const res = handler(makeRequest('/products/abc', 'text/markdown'));
 
       expect(res).not.toBeUndefined();
@@ -29,7 +24,7 @@ describe.each([
     });
 
     it('returns rewrite response for application/markdown', () => {
-      const handler = createFn(options);
+      const handler = createMarkdownNegotiator(options);
       const res = handler(makeRequest('/blog/hello', 'application/markdown'));
 
       expect(res).not.toBeUndefined();
@@ -39,14 +34,14 @@ describe.each([
     });
 
     it('returns rewrite response for text/x-markdown', () => {
-      const handler = createFn(options);
+      const handler = createMarkdownNegotiator(options);
       const res = handler(makeRequest('/products/x', 'text/x-markdown'));
 
       expect(res).not.toBeUndefined();
     });
 
     it('returns rewrite when markdown is among multiple accept types', () => {
-      const handler = createFn(options);
+      const handler = createMarkdownNegotiator(options);
       const res = handler(
         makeRequest('/products/x', 'text/html, text/markdown')
       );
@@ -57,21 +52,21 @@ describe.each([
 
   describe('pass-through cases', () => {
     it('returns undefined for text/html accept', () => {
-      const handler = createFn(options);
+      const handler = createMarkdownNegotiator(options);
       const res = handler(makeRequest('/products/abc', 'text/html'));
 
       expect(res).toBeUndefined();
     });
 
     it('returns undefined for non-matching route', () => {
-      const handler = createFn(options);
+      const handler = createMarkdownNegotiator(options);
       const res = handler(makeRequest('/unknown/path', 'text/markdown'));
 
       expect(res).toBeUndefined();
     });
 
     it('returns undefined when no accept header', () => {
-      const handler = createFn(options);
+      const handler = createMarkdownNegotiator(options);
       const req = new Request('http://localhost/products/abc');
       const res = handler(req);
 
@@ -81,7 +76,7 @@ describe.each([
 
   describe('custom prefix', () => {
     it('uses custom internal prefix', () => {
-      const handler = createFn({
+      const handler = createMarkdownNegotiator({
         routes: ['/products/[id]'],
         internalPrefix: '/_markdown',
       });

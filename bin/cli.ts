@@ -105,71 +105,23 @@ function main() {
     process.exit(1);
   }
 
-  // Detect Next.js major version for strategy guidance
-  let nextMajor: number | null = null;
-  if (existsSync(pkgPath)) {
-    try {
-      const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
-      const deps = { ...pkg.dependencies, ...pkg.devDependencies };
-      const nextVersion = deps['next'];
-      if (nextVersion) {
-        const match = nextVersion.match(/(\d+)/);
-        if (match) nextMajor = parseInt(match[1], 10);
-      }
-    } catch {
-      // Ignore parse errors
-    }
-  }
-
-  console.log('\nNext step — add content negotiation:\n');
-
-  if (nextMajor !== null && nextMajor >= 16) {
-    console.log(`  Your project uses Next.js ${nextMajor}, so add a proxy.ts in your project root:\n`);
-    console.log('  // proxy.ts');
-    console.log("  import { createMarkdownProxy } from 'next-md-negotiate';");
-    console.log('');
-    console.log('  const md = createMarkdownProxy({');
-    console.log("    routes: ['/products/[productId]', '/blog/[slug]'],");
-    console.log('  });');
-    console.log('');
-    console.log('  export function proxy(request: Request) {');
-    console.log('    return md(request);');
-    console.log('  }');
-  } else if (nextMajor !== null && nextMajor >= 14 && hasAppDir) {
-    console.log(`  Your project uses Next.js ${nextMajor} with App Router, so add a middleware.ts in your project root:\n`);
-    console.log('  // middleware.ts');
-    console.log("  import { createMarkdownMiddleware } from 'next-md-negotiate';");
-    console.log('');
-    console.log('  const md = createMarkdownMiddleware({');
-    console.log("    routes: ['/products/[productId]', '/blog/[slug]'],");
-    console.log('  });');
-    console.log('');
-    console.log('  export function middleware(request: Request) {');
-    console.log('    return md(request);');
-    console.log('  }');
-  } else if (nextMajor !== null && hasPagesDir && !hasAppDir) {
-    console.log(`  Your project uses Next.js ${nextMajor} with Pages Router, so add rewrites to next.config.js:\n`);
-    console.log('  // next.config.js');
-    console.log("  import { createMarkdownRewrites } from 'next-md-negotiate';");
-    console.log('');
-    console.log('  export default {');
-    console.log('    async rewrites() {');
-    console.log('      return {');
-    console.log('        beforeFiles: createMarkdownRewrites({');
-    console.log("          routes: ['/products/[productId]', '/blog/[slug]'],");
-    console.log('        }),');
-    console.log('      };');
-    console.log('    },');
-    console.log('  };');
-  } else {
-    // Version unknown or ambiguous — show all options
-    console.log('  Choose the integration method that fits your setup:\n');
-    console.log('  Next.js 16+        → proxy.ts       with createMarkdownProxy');
-    console.log('  Next.js 14-15 (App Router) → middleware.ts  with createMarkdownMiddleware');
-    console.log('  Pages Router       → next.config.js with createMarkdownRewrites');
-  }
-
-  console.log('\n  Then define your routes in md.config.ts');
+  console.log('\nNext step — add rewrites to next.config:\n');
+  console.log('  // next.config.ts');
+  console.log("  import { createMarkdownRewrites } from 'next-md-negotiate';");
+  console.log('');
+  console.log('  export default {');
+  console.log('    async rewrites() {');
+  console.log('      return {');
+  console.log('        beforeFiles: createMarkdownRewrites({');
+  console.log("          routes: ['/products/[productId]', '/blog/[slug]'],");
+  console.log('        }),');
+  console.log('      };');
+  console.log('    },');
+  console.log('  };');
+  console.log('');
+  console.log('  Then define your routes in md.config.ts');
+  console.log('');
+  console.log('  Alternative: use createMarkdownNegotiator in middleware.ts or proxy.ts');
 }
 
 main();

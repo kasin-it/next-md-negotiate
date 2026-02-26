@@ -134,58 +134,19 @@ describe('CLI init', () => {
   });
 
   describe('strategy guidance', () => {
-    it('recommends proxy.ts for Next.js 16+', () => {
+    it('recommends next.config rewrites as the default strategy', () => {
       mkdirSync(join(tmpDir, 'app'), { recursive: true });
-      writeFileSync(join(tmpDir, 'package.json'), JSON.stringify({
-        dependencies: { next: '^16.0.0' },
-      }));
       const output = run(tmpDir);
 
-      expect(output).toContain('proxy.ts');
-      expect(output).toContain('createMarkdownProxy');
-    });
-
-    it('recommends middleware.ts for Next.js 15 with App Router', () => {
-      mkdirSync(join(tmpDir, 'app'), { recursive: true });
-      writeFileSync(join(tmpDir, 'package.json'), JSON.stringify({
-        dependencies: { next: '^15.0.0' },
-      }));
-      const output = run(tmpDir);
-
-      expect(output).toContain('middleware.ts');
-      expect(output).toContain('createMarkdownMiddleware');
-    });
-
-    it('recommends middleware.ts for Next.js 14 with App Router', () => {
-      mkdirSync(join(tmpDir, 'app'), { recursive: true });
-      writeFileSync(join(tmpDir, 'package.json'), JSON.stringify({
-        dependencies: { next: '14.2.5' },
-      }));
-      const output = run(tmpDir);
-
-      expect(output).toContain('middleware.ts');
-      expect(output).toContain('createMarkdownMiddleware');
-    });
-
-    it('recommends next.config.js for Pages Router', () => {
-      mkdirSync(join(tmpDir, 'pages'), { recursive: true });
-      writeFileSync(join(tmpDir, 'package.json'), JSON.stringify({
-        dependencies: { next: '^13.0.0' },
-      }));
-      const output = run(tmpDir);
-
-      expect(output).toContain('next.config.js');
+      expect(output).toContain('next.config');
       expect(output).toContain('createMarkdownRewrites');
     });
 
-    it('shows all options when version cannot be determined', () => {
+    it('mentions createMarkdownNegotiator as an alternative', () => {
       mkdirSync(join(tmpDir, 'app'), { recursive: true });
-      // No package.json — version unknown
       const output = run(tmpDir);
 
-      expect(output).toContain('createMarkdownProxy');
-      expect(output).toContain('createMarkdownMiddleware');
-      expect(output).toContain('createMarkdownRewrites');
+      expect(output).toContain('createMarkdownNegotiator');
     });
   });
 });
