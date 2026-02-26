@@ -2,20 +2,20 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const APP_ROUTE_HANDLER = `import { createMdHandler } from 'next-md-negotiate';
-import registry from '@/md.config';
+import { mdConfig } from '@/md.config';
 
-export const GET = createMdHandler(registry);
+export const GET = createMdHandler(mdConfig);
 `;
 
 const PAGES_API_HANDLER = `import { createMdApiHandler } from 'next-md-negotiate';
-import registry from '@/md.config';
+import { mdConfig } from '@/md.config';
 
-export default createMdApiHandler(registry);
+export default createMdApiHandler(mdConfig);
 `;
 
 const MD_CONFIG = `import { createMdVersion } from 'next-md-negotiate';
 
-export default [
+export const mdConfig = [
   // createMdVersion('/products/[productId]', async ({ productId }) => {
   //   return \`# Product \${productId}\`;
   // }),

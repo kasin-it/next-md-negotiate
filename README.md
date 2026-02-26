@@ -48,7 +48,7 @@ This creates:
 // md.config.ts
 import { createMdVersion } from 'next-md-negotiate';
 
-export default [
+export const mdConfig = [
   createMdVersion('/products/[productId]', async ({ productId }) => {
     const product = await db.products.find(productId);
     return `# ${product.name}\n\nPrice: $${product.price}\n\n${product.description}`;
@@ -169,20 +169,20 @@ createMdVersion('/products/[productId]', async ({ productId }) => {
 - Multiple params: `/[org]/[repo]`
 - Static routes: `/about`
 
-### `createMdHandler(registry)`
+### `createMdHandler(mdConfig)`
 
 Creates an App Router handler for the catch-all route. Assign it to `GET`.
 
 ```ts
-export const GET = createMdHandler(registry);
+export const GET = createMdHandler(mdConfig);
 ```
 
-### `createMdApiHandler(registry)`
+### `createMdApiHandler(mdConfig)`
 
 Creates a Pages Router API handler for the catch-all route.
 
 ```ts
-export default createMdApiHandler(registry);
+export default createMdApiHandler(mdConfig);
 ```
 
 ### `createMarkdownRewrites(options)`
