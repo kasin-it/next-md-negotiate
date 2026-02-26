@@ -185,6 +185,105 @@ describe('CLI init', () => {
       expect(output).toContain('Updated next.config.ts');
     });
 
+    it('injects into typed variable with separate export default', () => {
+      mkdirSync(join(tmpDir, 'app'), { recursive: true });
+      writeFileSync(
+        join(tmpDir, 'next.config.ts'),
+        `import type { NextConfig } from 'next';\n\nconst nextConfig: NextConfig = {\n};\n\nexport default nextConfig;\n`
+      );
+
+      const output = runWithArgs(tmpDir, 'init --rewrites');
+      const content = readFileSync(join(tmpDir, 'next.config.ts'), 'utf-8');
+      expect(content).toContain('createMarkdownRewrites');
+      expect(content).toContain('async rewrites()');
+      expect(output).toContain('Updated next.config.ts');
+    });
+
+    it('injects into untyped variable with separate export default', () => {
+      mkdirSync(join(tmpDir, 'app'), { recursive: true });
+      writeFileSync(
+        join(tmpDir, 'next.config.ts'),
+        `const nextConfig = {\n};\n\nexport default nextConfig;\n`
+      );
+
+      const output = runWithArgs(tmpDir, 'init --rewrites');
+      const content = readFileSync(join(tmpDir, 'next.config.ts'), 'utf-8');
+      expect(content).toContain('createMarkdownRewrites');
+      expect(content).toContain('async rewrites()');
+      expect(output).toContain('Updated next.config.ts');
+    });
+
+    it('injects into JSDoc-typed variable with module.exports', () => {
+      mkdirSync(join(tmpDir, 'app'), { recursive: true });
+      writeFileSync(
+        join(tmpDir, 'next.config.js'),
+        `/** @type {import('next').NextConfig} */\nconst nextConfig = {\n};\n\nmodule.exports = nextConfig;\n`
+      );
+
+      const output = runWithArgs(tmpDir, 'init --rewrites');
+      const content = readFileSync(join(tmpDir, 'next.config.js'), 'utf-8');
+      expect(content).toContain('createMarkdownRewrites');
+      expect(content).toContain('async rewrites()');
+      expect(output).toContain('Updated next.config.js');
+    });
+
+    it('injects into module.exports = { ... }', () => {
+      mkdirSync(join(tmpDir, 'app'), { recursive: true });
+      writeFileSync(
+        join(tmpDir, 'next.config.js'),
+        `module.exports = {\n};\n`
+      );
+
+      const output = runWithArgs(tmpDir, 'init --rewrites');
+      const content = readFileSync(join(tmpDir, 'next.config.js'), 'utf-8');
+      expect(content).toContain('createMarkdownRewrites');
+      expect(content).toContain('async rewrites()');
+      expect(output).toContain('Updated next.config.js');
+    });
+
+    it('injects into export default { ... } satisfies NextConfig', () => {
+      mkdirSync(join(tmpDir, 'app'), { recursive: true });
+      writeFileSync(
+        join(tmpDir, 'next.config.ts'),
+        `import type { NextConfig } from 'next';\n\nexport default {\n} satisfies NextConfig;\n`
+      );
+
+      const output = runWithArgs(tmpDir, 'init --rewrites');
+      const content = readFileSync(join(tmpDir, 'next.config.ts'), 'utf-8');
+      expect(content).toContain('createMarkdownRewrites');
+      expect(content).toContain('async rewrites()');
+      expect(output).toContain('Updated next.config.ts');
+    });
+
+    it('injects into next.config.mjs', () => {
+      mkdirSync(join(tmpDir, 'app'), { recursive: true });
+      writeFileSync(
+        join(tmpDir, 'next.config.mjs'),
+        `const nextConfig = {\n};\n\nexport default nextConfig;\n`
+      );
+
+      const output = runWithArgs(tmpDir, 'init --rewrites');
+      const content = readFileSync(join(tmpDir, 'next.config.mjs'), 'utf-8');
+      expect(content).toContain('createMarkdownRewrites');
+      expect(content).toContain('async rewrites()');
+      expect(output).toContain('Updated next.config.mjs');
+    });
+
+    it('injects into typed variable with existing rewrites (object return)', () => {
+      mkdirSync(join(tmpDir, 'app'), { recursive: true });
+      writeFileSync(
+        join(tmpDir, 'next.config.ts'),
+        `import type { NextConfig } from 'next';\n\nconst nextConfig: NextConfig = {\n  async rewrites() {\n    return {\n      afterFiles: [],\n    };\n  },\n};\n\nexport default nextConfig;\n`
+      );
+
+      const output = runWithArgs(tmpDir, 'init --rewrites');
+      const content = readFileSync(join(tmpDir, 'next.config.ts'), 'utf-8');
+      expect(content).toContain('createMarkdownRewrites');
+      expect(content).toContain('beforeFiles');
+      expect(content).toContain('afterFiles');
+      expect(output).toContain('Updated next.config.ts');
+    });
+
     it('wraps existing array return with beforeFiles + afterFiles', () => {
       mkdirSync(join(tmpDir, 'app'), { recursive: true });
       writeFileSync(

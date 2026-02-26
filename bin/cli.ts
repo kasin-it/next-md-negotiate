@@ -198,6 +198,29 @@ function injectIntoExistingRewrites(content: string): string | null {
   return null;
 }
 
+function findConfigObjectStart(content: string): number | null {
+  // 1. export default { ... }
+  // 2. const/let/var name: Type = { ... }  (with optional type annotation)
+  // 3. module.exports = { ... }
+  const directPattern =
+    /(?:export\s+default\s*\{|(?:const|let|var)\s+\w+(?:\s*:[^=]+)?\s*=\s*\{|module\.exports\s*=\s*\{)/;
+  const match = directPattern.exec(content);
+  if (match) return match.index + match[0].length;
+
+  // 4. export default <identifier> → resolve to its variable declaration
+  const defaultExportMatch = /export\s+default\s+(\w+)/.exec(content);
+  if (defaultExportMatch) {
+    const varName = defaultExportMatch[1];
+    const varPattern = new RegExp(
+      `(?:const|let|var)\\s+${varName}(?:\\s*:[^=]+)?\\s*=\\s*\\{`,
+    );
+    const varMatch = varPattern.exec(content);
+    if (varMatch) return varMatch.index + varMatch[0].length;
+  }
+
+  return null;
+}
+
 function applyRewritesCodemod(cwd: string) {
   const configPath = findNextConfig(cwd);
 
@@ -229,17 +252,13 @@ function applyRewritesCodemod(cwd: string) {
     return;
   }
 
-  const configObjectPattern =
-    /(?:export\s+default\s*\{|(?:const|let|var)\s+\w+\s*=\s*\{|module\.exports\s*=\s*\{)/;
-  const match = configObjectPattern.exec(content);
+  const insertPos = findConfigObjectStart(content);
 
-  if (!match) {
+  if (insertPos === null) {
     logWarn(`Could not find config object in ${fileName}.`);
     printRewritesSnippet();
     return;
   }
-
-  const insertPos = match.index! + match[0].length;
   const updated =
     REWRITES_IMPORT +
     content.slice(0, insertPos) +
