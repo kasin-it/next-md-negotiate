@@ -98,7 +98,7 @@ function printRewritesSnippet() {
 }
 
 function printMiddlewareInstructions() {
-  const snippet = [
+  const middlewareSnippet = [
     "// middleware.ts (or proxy.ts)",
     "import { createNegotiatorFromConfig } from 'next-md-negotiate';",
     "import { mdConfig } from './md.config';",
@@ -112,11 +112,7 @@ function printMiddlewareInstructions() {
     "}",
   ].join("\n");
 
-  showNote(snippet, "Add a middleware or proxy for content negotiation");
-}
-
-function printGenericInstructions() {
-  const snippet = [
+  const rewritesSnippet = [
     "// next.config.ts",
     "import { createRewritesFromConfig } from 'next-md-negotiate';",
     "import { mdConfig } from './md.config';",
@@ -130,10 +126,41 @@ function printGenericInstructions() {
     "};",
   ].join("\n");
 
-  showNote(snippet, "Next step — add rewrites to next.config");
-  logInfo(
-    "Alternative: use createMarkdownNegotiator in middleware.ts or proxy.ts",
-  );
+  showNote(middlewareSnippet, "Add a middleware or proxy for content negotiation");
+  showNote(rewritesSnippet, "Alternative — add rewrites to next.config instead");
+}
+
+function printGenericInstructions() {
+  const rewritesSnippet = [
+    "// next.config.ts",
+    "import { createRewritesFromConfig } from 'next-md-negotiate';",
+    "import { mdConfig } from './md.config';",
+    "",
+    "export default {",
+    "  async rewrites() {",
+    "    return {",
+    "      beforeFiles: createRewritesFromConfig(mdConfig),",
+    "    };",
+    "  },",
+    "};",
+  ].join("\n");
+
+  const middlewareSnippet = [
+    "// middleware.ts (or proxy.ts)",
+    "import { createNegotiatorFromConfig } from 'next-md-negotiate';",
+    "import { mdConfig } from './md.config';",
+    "",
+    "const md = createNegotiatorFromConfig(mdConfig);",
+    "",
+    "export function middleware(request: Request) {",
+    "  const mdResponse = md(request);",
+    "  if (mdResponse) return mdResponse;",
+    "  // ...your other middleware logic",
+    "}",
+  ].join("\n");
+
+  showNote(rewritesSnippet, "Next step — add rewrites to next.config");
+  showNote(middlewareSnippet, "Alternative — use middleware or proxy instead");
 }
 
 function findNextConfig(cwd: string): string | null {

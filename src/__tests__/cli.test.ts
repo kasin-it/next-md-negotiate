@@ -301,23 +301,26 @@ describe('CLI init', () => {
   });
 
   describe('--middleware flag', () => {
-    it('prints createMarkdownNegotiator instructions', () => {
+    it('prints both middleware and rewrites instructions', () => {
       mkdirSync(join(tmpDir, 'app'), { recursive: true });
       const output = runWithArgs(tmpDir, 'init --middleware');
 
-      expect(output).toContain('createMarkdownNegotiator');
+      expect(output).toContain('createNegotiatorFromConfig');
+      expect(output).toContain('createRewritesFromConfig');
+      expect(output).toContain('mdConfig');
       expect(output).toContain('middleware');
     });
   });
 
   describe('no flags (non-TTY)', () => {
-    it('prints generic instructions', () => {
+    it('prints both rewrites and middleware instructions', () => {
       mkdirSync(join(tmpDir, 'app'), { recursive: true });
       const output = run(tmpDir);
 
       expect(output).toContain('next.config');
       expect(output).toContain('createRewritesFromConfig');
-      expect(output).toContain('createMarkdownNegotiator');
+      expect(output).toContain('createNegotiatorFromConfig');
+      expect(output).toContain('middleware');
     });
   });
 });
