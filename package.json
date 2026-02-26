@@ -2,7 +2,35 @@
   "name": "next-md-negotiate",
   "version": "0.0.1",
   "description": "Content negotiation for Next.js - serve Markdown to LLMs, HTML to browsers, from a single URL",
-  "main": "index.js",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "next-md-negotiate": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
   "keywords": [
     "nextjs",
     "markdown",
@@ -15,5 +43,13 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/kasin-it/next-md-negotiate"
+  },
+  "peerDependencies": {
+    "next": ">=14.0.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^4.0.18"
   }
 }
