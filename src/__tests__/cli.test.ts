@@ -142,7 +142,7 @@ describe('CLI init', () => {
       expect(existsSync(configPath)).toBe(true);
 
       const content = readFileSync(configPath, 'utf-8');
-      expect(content).toContain('createMarkdownRewrites');
+      expect(content).toContain('createRewritesFromConfig');
       expect(content).toContain('async rewrites()');
       expect(output).toContain('Created next.config.ts');
     });
@@ -154,20 +154,20 @@ describe('CLI init', () => {
       const output = runWithArgs(tmpDir, 'init --rewrites');
 
       const content = readFileSync(join(tmpDir, 'next.config.ts'), 'utf-8');
-      expect(content).toContain('createMarkdownRewrites');
+      expect(content).toContain('createRewritesFromConfig');
       expect(content).toContain('async rewrites()');
       expect(output).toContain('Updated next.config.ts');
     });
 
-    it('skips when createMarkdownRewrites already present', () => {
+    it('skips when createRewritesFromConfig already present', () => {
       mkdirSync(join(tmpDir, 'app'), { recursive: true });
       writeFileSync(
         join(tmpDir, 'next.config.ts'),
-        "import { createMarkdownRewrites } from 'next-md-negotiate';\nexport default {};\n"
+        "import { createRewritesFromConfig } from 'next-md-negotiate';\nexport default {};\n"
       );
 
       const output = runWithArgs(tmpDir, 'init --rewrites');
-      expect(output).toContain('already has createMarkdownRewrites');
+      expect(output).toContain('already has rewrite configuration');
     });
 
     it('injects beforeFiles into existing object return', () => {
@@ -179,7 +179,7 @@ describe('CLI init', () => {
 
       const output = runWithArgs(tmpDir, 'init --rewrites');
       const content = readFileSync(join(tmpDir, 'next.config.ts'), 'utf-8');
-      expect(content).toContain('createMarkdownRewrites');
+      expect(content).toContain('createRewritesFromConfig');
       expect(content).toContain('afterFiles');
       expect(content).toContain('beforeFiles');
       expect(output).toContain('Updated next.config.ts');
@@ -194,7 +194,7 @@ describe('CLI init', () => {
 
       const output = runWithArgs(tmpDir, 'init --rewrites');
       const content = readFileSync(join(tmpDir, 'next.config.ts'), 'utf-8');
-      expect(content).toContain('createMarkdownRewrites');
+      expect(content).toContain('createRewritesFromConfig');
       expect(content).toContain('async rewrites()');
       expect(output).toContain('Updated next.config.ts');
     });
@@ -208,7 +208,7 @@ describe('CLI init', () => {
 
       const output = runWithArgs(tmpDir, 'init --rewrites');
       const content = readFileSync(join(tmpDir, 'next.config.ts'), 'utf-8');
-      expect(content).toContain('createMarkdownRewrites');
+      expect(content).toContain('createRewritesFromConfig');
       expect(content).toContain('async rewrites()');
       expect(output).toContain('Updated next.config.ts');
     });
@@ -222,7 +222,7 @@ describe('CLI init', () => {
 
       const output = runWithArgs(tmpDir, 'init --rewrites');
       const content = readFileSync(join(tmpDir, 'next.config.js'), 'utf-8');
-      expect(content).toContain('createMarkdownRewrites');
+      expect(content).toContain('createRewritesFromConfig');
       expect(content).toContain('async rewrites()');
       expect(output).toContain('Updated next.config.js');
     });
@@ -236,7 +236,7 @@ describe('CLI init', () => {
 
       const output = runWithArgs(tmpDir, 'init --rewrites');
       const content = readFileSync(join(tmpDir, 'next.config.js'), 'utf-8');
-      expect(content).toContain('createMarkdownRewrites');
+      expect(content).toContain('createRewritesFromConfig');
       expect(content).toContain('async rewrites()');
       expect(output).toContain('Updated next.config.js');
     });
@@ -250,7 +250,7 @@ describe('CLI init', () => {
 
       const output = runWithArgs(tmpDir, 'init --rewrites');
       const content = readFileSync(join(tmpDir, 'next.config.ts'), 'utf-8');
-      expect(content).toContain('createMarkdownRewrites');
+      expect(content).toContain('createRewritesFromConfig');
       expect(content).toContain('async rewrites()');
       expect(output).toContain('Updated next.config.ts');
     });
@@ -264,7 +264,7 @@ describe('CLI init', () => {
 
       const output = runWithArgs(tmpDir, 'init --rewrites');
       const content = readFileSync(join(tmpDir, 'next.config.mjs'), 'utf-8');
-      expect(content).toContain('createMarkdownRewrites');
+      expect(content).toContain('createRewritesFromConfig');
       expect(content).toContain('async rewrites()');
       expect(output).toContain('Updated next.config.mjs');
     });
@@ -278,7 +278,7 @@ describe('CLI init', () => {
 
       const output = runWithArgs(tmpDir, 'init --rewrites');
       const content = readFileSync(join(tmpDir, 'next.config.ts'), 'utf-8');
-      expect(content).toContain('createMarkdownRewrites');
+      expect(content).toContain('createRewritesFromConfig');
       expect(content).toContain('beforeFiles');
       expect(content).toContain('afterFiles');
       expect(output).toContain('Updated next.config.ts');
@@ -316,7 +316,7 @@ describe('CLI init', () => {
       const output = run(tmpDir);
 
       expect(output).toContain('next.config');
-      expect(output).toContain('createMarkdownRewrites');
+      expect(output).toContain('createRewritesFromConfig');
       expect(output).toContain('createMarkdownNegotiator');
     });
   });

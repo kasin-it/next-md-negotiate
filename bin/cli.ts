@@ -25,32 +25,27 @@ export const mdConfig = [
 ];
 `;
 
-const REWRITES_IMPORT = `import { createMarkdownRewrites } from 'next-md-negotiate';\n`;
+const REWRITES_IMPORT = `import { createRewritesFromConfig } from 'next-md-negotiate';\nimport { mdConfig } from './md.config';\n`;
 
 const REWRITES_SNIPPET = `  async rewrites() {
     return {
-      beforeFiles: createMarkdownRewrites({
-        routes: ['/products/[productId]', '/blog/[slug]'],
-      }),
+      beforeFiles: createRewritesFromConfig(mdConfig),
     };
   },`;
 
-const NEW_NEXT_CONFIG = `import { createMarkdownRewrites } from 'next-md-negotiate';
+const NEW_NEXT_CONFIG = `import { createRewritesFromConfig } from 'next-md-negotiate';
+import { mdConfig } from './md.config';
 
 export default {
   async rewrites() {
     return {
-      beforeFiles: createMarkdownRewrites({
-        routes: ['/products/[productId]', '/blog/[slug]'],
-      }),
+      beforeFiles: createRewritesFromConfig(mdConfig),
     };
   },
 };
 `;
 
-const BEFORE_FILES_ENTRY = `      beforeFiles: createMarkdownRewrites({
-        routes: ['/products/[productId]', '/blog/[slug]'],
-      }),`;
+const BEFORE_FILES_ENTRY = `      beforeFiles: createRewritesFromConfig(mdConfig),`;
 
 // --- Output helpers ---
 
@@ -88,14 +83,13 @@ function showNote(content: string, title: string) {
 
 function printRewritesSnippet() {
   const snippet = [
-    "import { createMarkdownRewrites } from 'next-md-negotiate';",
+    "import { createRewritesFromConfig } from 'next-md-negotiate';",
+    "import { mdConfig } from './md.config';",
     "",
     "// inside your config object:",
     "async rewrites() {",
     "  return {",
-    "    beforeFiles: createMarkdownRewrites({",
-    "      routes: ['/products/[productId]', '/blog/[slug]'],",
-    "    }),",
+    "    beforeFiles: createRewritesFromConfig(mdConfig),",
     "  };",
     "},",
   ].join("\n");
@@ -119,14 +113,13 @@ function printMiddlewareInstructions() {
 function printGenericInstructions() {
   const snippet = [
     "// next.config.ts",
-    "import { createMarkdownRewrites } from 'next-md-negotiate';",
+    "import { createRewritesFromConfig } from 'next-md-negotiate';",
+    "import { mdConfig } from './md.config';",
     "",
     "export default {",
     "  async rewrites() {",
     "    return {",
-    "      beforeFiles: createMarkdownRewrites({",
-    "        routes: ['/products/[productId]', '/blog/[slug]'],",
-    "      }),",
+    "      beforeFiles: createRewritesFromConfig(mdConfig),",
     "    };",
     "  },",
     "};",
@@ -233,8 +226,8 @@ function applyRewritesCodemod(cwd: string) {
   const content = readFileSync(configPath, "utf-8");
   const fileName = configPath.split("/").pop()!;
 
-  if (content.includes("createMarkdownRewrites")) {
-    logWarn(`${fileName} already has createMarkdownRewrites — skipped`);
+  if (content.includes("createRewritesFromConfig") || content.includes("createMarkdownRewrites")) {
+    logWarn(`${fileName} already has rewrite configuration — skipped`);
     return;
   }
 
