@@ -133,19 +133,91 @@ describe('CLI init', () => {
     });
   });
 
-  describe('strategy guidance', () => {
-    it('recommends next.config rewrites as the default strategy', () => {
+  describe('--rewrites flag', () => {
+    it('creates next.config.ts when none exists', () => {
+      mkdirSync(join(tmpDir, 'app'), { recursive: true });
+      const output = runWithArgs(tmpDir, 'init --rewrites');
+
+      const configPath = join(tmpDir, 'next.config.ts');
+      expect(existsSync(configPath)).toBe(true);
+
+      const content = readFileSync(configPath, 'utf-8');
+      expect(content).toContain('createMarkdownRewrites');
+      expect(content).toContain('async rewrites()');
+      expect(output).toContain('Created next.config.ts');
+    });
+
+    it('injects into existing export default config', () => {
+      mkdirSync(join(tmpDir, 'app'), { recursive: true });
+      writeFileSync(join(tmpDir, 'next.config.ts'), 'export default {\n};\n');
+
+      const output = runWithArgs(tmpDir, 'init --rewrites');
+
+      const content = readFileSync(join(tmpDir, 'next.config.ts'), 'utf-8');
+      expect(content).toContain('createMarkdownRewrites');
+      expect(content).toContain('async rewrites()');
+      expect(output).toContain('Updated next.config.ts');
+    });
+
+    it('skips when createMarkdownRewrites already present', () => {
+      mkdirSync(join(tmpDir, 'app'), { recursive: true });
+      writeFileSync(
+        join(tmpDir, 'next.config.ts'),
+        "import { createMarkdownRewrites } from 'next-md-negotiate';\nexport default {};\n"
+      );
+
+      const output = runWithArgs(tmpDir, 'init --rewrites');
+      expect(output).toContain('already has createMarkdownRewrites');
+    });
+
+    it('injects beforeFiles into existing object return', () => {
+      mkdirSync(join(tmpDir, 'app'), { recursive: true });
+      writeFileSync(
+        join(tmpDir, 'next.config.ts'),
+        `export default {\n  async rewrites() {\n    return {\n      afterFiles: [],\n    };\n  },\n};\n`
+      );
+
+      const output = runWithArgs(tmpDir, 'init --rewrites');
+      const content = readFileSync(join(tmpDir, 'next.config.ts'), 'utf-8');
+      expect(content).toContain('createMarkdownRewrites');
+      expect(content).toContain('afterFiles');
+      expect(content).toContain('beforeFiles');
+      expect(output).toContain('Updated next.config.ts');
+    });
+
+    it('wraps existing array return with beforeFiles + afterFiles', () => {
+      mkdirSync(join(tmpDir, 'app'), { recursive: true });
+      writeFileSync(
+        join(tmpDir, 'next.config.ts'),
+        `export default {\n  async rewrites() {\n    return [\n      { source: '/x', destination: '/y' },\n    ];\n  },\n};\n`
+      );
+
+      const output = runWithArgs(tmpDir, 'init --rewrites');
+      const content = readFileSync(join(tmpDir, 'next.config.ts'), 'utf-8');
+      expect(content).toContain('beforeFiles');
+      expect(content).toContain('afterFiles');
+      expect(content).toContain("source: '/x'");
+      expect(output).toContain('Updated next.config.ts');
+    });
+  });
+
+  describe('--middleware flag', () => {
+    it('prints createMarkdownNegotiator instructions', () => {
+      mkdirSync(join(tmpDir, 'app'), { recursive: true });
+      const output = runWithArgs(tmpDir, 'init --middleware');
+
+      expect(output).toContain('createMarkdownNegotiator');
+      expect(output).toContain('middleware');
+    });
+  });
+
+  describe('no flags (non-TTY)', () => {
+    it('prints generic instructions', () => {
       mkdirSync(join(tmpDir, 'app'), { recursive: true });
       const output = run(tmpDir);
 
       expect(output).toContain('next.config');
       expect(output).toContain('createMarkdownRewrites');
-    });
-
-    it('mentions createMarkdownNegotiator as an alternative', () => {
-      mkdirSync(join(tmpDir, 'app'), { recursive: true });
-      const output = run(tmpDir);
-
       expect(output).toContain('createMarkdownNegotiator');
     });
   });
