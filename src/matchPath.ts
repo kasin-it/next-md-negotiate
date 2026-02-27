@@ -7,11 +7,14 @@
  * - Multiple params: /[org]/[repo]          → { org: 'x', repo: 'y' }
  */
 
+const MAX_CACHE = 100;
 const regexCache = new Map<string, RegExp>();
 
 function compilePattern(pattern: string): RegExp {
   const cached = regexCache.get(pattern);
   if (cached) return cached;
+
+  if (regexCache.size >= MAX_CACHE) regexCache.clear();
 
   // Replace param placeholders with temporary tokens to avoid escaping them
   const CATCHALL_TOKEN = '\x00CATCHALL_';

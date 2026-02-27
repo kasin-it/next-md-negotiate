@@ -89,67 +89,59 @@ function showNote(content: string, title: string) {
 // --- Codemod helpers ---
 
 function printRewritesSnippet() {
-  const snippet = [
-    "import { createRewritesFromConfig } from 'next-md-negotiate';",
-    "import { mdConfig } from './md.config';",
-    "",
-    "// inside your config object:",
-    "async rewrites() {",
-    "  return {",
-    "    beforeFiles: createRewritesFromConfig(mdConfig),",
-    "  };",
-    "},",
-  ].join("\n");
+  const snippet = `import { createRewritesFromConfig } from 'next-md-negotiate';
+import { mdConfig } from './md.config';
+
+// inside your config object:
+async rewrites() {
+  return {
+    beforeFiles: createRewritesFromConfig(mdConfig),
+  };
+},`;
 
   showNote(snippet, "Add this to your next.config");
 }
 
 function printMiddlewareInstructions() {
-  const snippet = [
-    "// middleware.ts (or proxy.ts)",
-    "import { createNegotiatorFromConfig } from 'next-md-negotiate';",
-    "import { mdConfig } from './md.config';",
-    "",
-    "const md = createNegotiatorFromConfig(mdConfig);",
-    "",
-    "export function middleware(request: Request) {",
-    "  const mdResponse = md(request);",
-    "  if (mdResponse) return mdResponse;",
-    "  // ...your other middleware logic",
-    "}",
-  ].join("\n");
+  const snippet = `// middleware.ts (or proxy.ts)
+import { createNegotiatorFromConfig } from 'next-md-negotiate';
+import { mdConfig } from './md.config';
+
+const md = createNegotiatorFromConfig(mdConfig);
+
+export function middleware(request: Request) {
+  const mdResponse = md(request);
+  if (mdResponse) return mdResponse;
+  // ...your other middleware logic
+}`;
 
   showNote(snippet, "Add a middleware or proxy for content negotiation");
 }
 
 function printGenericInstructions() {
-  const rewritesSnippet = [
-    "// next.config.ts",
-    "import { createRewritesFromConfig } from 'next-md-negotiate';",
-    "import { mdConfig } from './md.config';",
-    "",
-    "export default {",
-    "  async rewrites() {",
-    "    return {",
-    "      beforeFiles: createRewritesFromConfig(mdConfig),",
-    "    };",
-    "  },",
-    "};",
-  ].join("\n");
+  const rewritesSnippet = `// next.config.ts
+import { createRewritesFromConfig } from 'next-md-negotiate';
+import { mdConfig } from './md.config';
 
-  const middlewareSnippet = [
-    "// middleware.ts (or proxy.ts)",
-    "import { createNegotiatorFromConfig } from 'next-md-negotiate';",
-    "import { mdConfig } from './md.config';",
-    "",
-    "const md = createNegotiatorFromConfig(mdConfig);",
-    "",
-    "export function middleware(request: Request) {",
-    "  const mdResponse = md(request);",
-    "  if (mdResponse) return mdResponse;",
-    "  // ...your other middleware logic",
-    "}",
-  ].join("\n");
+export default {
+  async rewrites() {
+    return {
+      beforeFiles: createRewritesFromConfig(mdConfig),
+    };
+  },
+};`;
+
+  const middlewareSnippet = `// middleware.ts (or proxy.ts)
+import { createNegotiatorFromConfig } from 'next-md-negotiate';
+import { mdConfig } from './md.config';
+
+const md = createNegotiatorFromConfig(mdConfig);
+
+export function middleware(request: Request) {
+  const mdResponse = md(request);
+  if (mdResponse) return mdResponse;
+  // ...your other middleware logic
+}`;
 
   showNote(rewritesSnippet, "Next step — add rewrites to next.config");
   showNote(middlewareSnippet, "Alternative — use middleware or proxy instead");
@@ -166,13 +158,13 @@ function injectIntoExistingRewrites(content: string): string | null {
   const rewritesMatch = /(?:async\s+)?rewrites\s*\(\s*\)\s*\{/.exec(content);
   if (!rewritesMatch) return null;
 
-  const bodyStart = rewritesMatch.index! + rewritesMatch[0].length;
+  const bodyStart = rewritesMatch.index + rewritesMatch[0].length;
   const afterBody = content.slice(bodyStart);
 
   const returnMatch = /return\s*/.exec(afterBody);
   if (!returnMatch) return null;
 
-  const returnEnd = bodyStart + returnMatch.index! + returnMatch[0].length;
+  const returnEnd = bodyStart + returnMatch.index + returnMatch[0].length;
   const charAfterReturn = content[returnEnd];
 
   if (charAfterReturn === "{") {

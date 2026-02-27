@@ -4,7 +4,7 @@ const MARKDOWN_TYPES = [
   'text/markdown',
   'application/markdown',
   'text/x-markdown',
-];
+] as const;
 
 export interface NegotiateOptions {
   routes: string[];

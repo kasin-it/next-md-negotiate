@@ -51,7 +51,7 @@ const posts: BlogPost[] = [
 ];
 
 /** Simulate an async API call */
-async function delay(ms = 10) {
+function delay(ms = 10) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
