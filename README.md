@@ -15,7 +15,7 @@ The HTTP `Accept` header already solves this. A browser sends `Accept: text/html
 
 `next-md-negotiate` intercepts requests that ask for Markdown, rewrites them to an internal API route, and returns the Markdown version you define — all transparently, from the same URL.
 
-```
+```text
 Browser   → GET /products/42  Accept: text/html       → your normal Next.js page
 LLM agent → GET /products/42  Accept: text/markdown   → your Markdown version
 ```
@@ -28,19 +28,31 @@ No new URLs. No duplicate routing. The client just sets an `Accept` header.
 npm install next-md-negotiate
 ```
 
+> Or run `npx next-md-negotiate init` to scaffold the files below automatically.
+
 ## Quick start
 
-### 1. Scaffold the handler
+### 1. Create the catch-all route handler
 
-```bash
-npx next-md-negotiate init
+**App Router** — create `app/md-api/[...path]/route.ts`:
+
+```ts
+// app/md-api/[...path]/route.ts
+import { createMdHandler } from 'next-md-negotiate';
+import { mdConfig } from '@/md.config';
+
+export const GET = createMdHandler(mdConfig);
 ```
 
-This creates:
+**Pages Router** — create `pages/api/md-api/[...path].ts` instead:
 
-- **App Router:** `app/md-api/[...path]/route.ts`
-- **Pages Router:** `pages/api/md-api/[...path].ts`
-- **Config:** `md.config.ts`
+```ts
+// pages/api/md-api/[...path].ts
+import { createMdApiHandler } from 'next-md-negotiate';
+import { mdConfig } from '@/md.config';
+
+export default createMdApiHandler(mdConfig);
+```
 
 ### 2. Define your Markdown versions
 
@@ -85,7 +97,7 @@ That's it. Requests with `Accept: text/markdown` get your Markdown. Everything e
 
 ## How it works
 
-```
+```text
                          Accept: text/markdown?
                                 │
                       ┌─────────┴─────────┐
