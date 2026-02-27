@@ -1,2 +1,5 @@
 node_modules
 dist
+.claude
+.agents
+skills-lock.json

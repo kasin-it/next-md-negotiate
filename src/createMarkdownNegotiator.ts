@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server.js';
 import { negotiateRequest, type NegotiateOptions } from './negotiateRequest.js';
 import { validatePattern } from './validatePattern.js';
 
@@ -25,14 +26,10 @@ export function createMarkdownNegotiator(options: NegotiateOptions) {
     validatePattern(route);
   }
 
-  return (request: Request): Response | undefined => {
+  return (request: Request): NextResponse | undefined => {
     const rewriteUrl = negotiateRequest(request, options);
     if (!rewriteUrl) return undefined;
 
-    return new Response(null, {
-      headers: {
-        'x-middleware-rewrite': rewriteUrl.toString(),
-      },
-    });
+    return NextResponse.rewrite(rewriteUrl);
   };
 }

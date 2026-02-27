@@ -45,7 +45,7 @@ describe('demo app integration', () => {
 
       expect(res.status).toBe(200);
       const html = await res.text();
-      expect(html).toContain('next-md-negotiate demo');
+      expect(html).toContain('next-md-negotiate');
       expect(html).toContain('Wireless Headphones');
       expect(html).toContain('Getting Started');
     });

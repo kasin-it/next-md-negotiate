@@ -2,58 +2,144 @@ import Link from "next/link";
 import { getAllProducts, getAllBlogPosts } from "@/lib/data";
 
 export default async function Home() {
-  const products = await getAllProducts();
-  const posts = await getAllBlogPosts();
+  const [products, posts] = await Promise.all([
+    getAllProducts(),
+    getAllBlogPosts(),
+  ]);
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-16">
-      <h1 className="text-3xl font-bold tracking-tight">
-        next-md-negotiate demo
-      </h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-        Same URL serves HTML to browsers and Markdown to LLMs.
-      </p>
+    <main className="mx-auto max-w-2xl px-6 py-20">
+      {/* Header */}
+      <header className="animate-in">
+        <div className="flex items-center gap-3">
+          <span className="font-mono text-sm text-accent">$</span>
+          <h1 className="font-mono text-2xl font-medium tracking-tight">
+            next-md-negotiate
+          </h1>
+        </div>
+        <p className="mt-3 text-[15px] leading-relaxed text-muted">
+          Same URL. Two responses. Browsers get HTML, LLMs get Markdown.
+        </p>
+      </header>
 
-      <section className="mt-10">
-        <h2 className="text-xl font-semibold">Products</h2>
-        <ul className="mt-3 space-y-2">
+      {/* Negotiation demo */}
+      <section className="animate-in animate-in-delay-1 mt-10 grid grid-cols-2 gap-3">
+        <div className="rounded-lg border border-border bg-surface p-4">
+          <div className="flex items-center gap-2 text-xs text-muted">
+            <span className="inline-block h-2 w-2 rounded-full bg-blue-500" />
+            Browser
+          </div>
+          <p className="mt-2 font-mono text-xs leading-relaxed text-foreground/70">
+            Accept: text/html
+          </p>
+          <p className="mt-2 text-xs text-muted">
+            &rarr; renders your Next.js page
+          </p>
+        </div>
+        <div className="rounded-lg border border-accent/20 bg-accent-dim p-4">
+          <div className="flex items-center gap-2 text-xs text-muted">
+            <span className="inline-block h-2 w-2 rounded-full bg-accent" />
+            LLM / AI Agent
+          </div>
+          <p className="mt-2 font-mono text-xs leading-relaxed text-foreground/70">
+            Accept: text/markdown
+          </p>
+          <p className="mt-2 text-xs text-accent/70">
+            &rarr; returns your Markdown
+          </p>
+        </div>
+      </section>
+
+      {/* Products */}
+      <section className="animate-in animate-in-delay-2 mt-14">
+        <h2 className="font-mono text-xs font-medium uppercase tracking-widest text-muted">
+          Products
+        </h2>
+        <ul className="mt-4 space-y-2">
           {products.map((p) => (
             <li key={p.id}>
               <Link
                 href={`/products/${p.id}`}
-                className="text-blue-600 hover:underline dark:text-blue-400"
+                className="group flex items-center justify-between rounded-lg border border-border bg-surface px-4 py-3 transition-colors hover:border-accent/30 hover:bg-surface-hover"
               >
-                {p.name}
+                <span className="text-[15px] font-medium group-hover:text-accent transition-colors">
+                  {p.name}
+                </span>
+                <span className="font-mono text-sm text-muted">
+                  ${p.price}
+                </span>
               </Link>
-              <span className="ml-2 text-sm text-zinc-500">${p.price}</span>
             </li>
           ))}
         </ul>
       </section>
 
-      <section className="mt-10">
-        <h2 className="text-xl font-semibold">Blog</h2>
-        <ul className="mt-3 space-y-2">
+      {/* Blog */}
+      <section className="animate-in animate-in-delay-3 mt-14">
+        <h2 className="font-mono text-xs font-medium uppercase tracking-widest text-muted">
+          Blog
+        </h2>
+        <ul className="mt-4 space-y-2">
           {posts.map((post) => (
             <li key={post.slug}>
               <Link
                 href={`/blog/${post.slug}`}
-                className="text-blue-600 hover:underline dark:text-blue-400"
+                className="group flex items-center justify-between rounded-lg border border-border bg-surface px-4 py-3 transition-colors hover:border-accent/30 hover:bg-surface-hover"
               >
-                {post.title}
+                <span className="text-[15px] font-medium group-hover:text-accent transition-colors">
+                  {post.title}
+                </span>
+                <span className="font-mono text-xs text-muted">
+                  {post.date}
+                </span>
               </Link>
-              <span className="ml-2 text-sm text-zinc-500">{post.date}</span>
             </li>
           ))}
         </ul>
       </section>
 
-      <section className="mt-10 rounded-lg bg-zinc-100 p-4 dark:bg-zinc-900">
-        <h2 className="text-sm font-semibold">Try it</h2>
-        <code className="mt-1 block text-xs text-zinc-600 dark:text-zinc-400">
-          curl -H &quot;Accept: text/markdown&quot; http://localhost:3000/products/1
-        </code>
+      {/* Terminal */}
+      <section className="animate-in animate-in-delay-4 mt-14">
+        <div className="overflow-hidden rounded-lg border border-border bg-surface">
+          <div className="flex items-center gap-1.5 border-b border-border px-4 py-2.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
+            <span className="ml-3 font-mono text-xs text-muted">terminal</span>
+          </div>
+          <div className="p-4">
+            <p className="font-mono text-xs leading-relaxed text-muted">
+              <span className="text-accent">$</span>{" "}
+              <span className="text-foreground/80">
+                curl -H &quot;Accept: text/markdown&quot;
+              </span>{" "}
+              <span className="text-foreground/50">
+                http://localhost:3000/products/1
+              </span>
+            </p>
+            <div className="mt-3 border-t border-border/50 pt-3">
+              <p className="font-mono text-xs leading-loose text-foreground/60">
+                <span className="text-accent/80"># Wireless Headphones</span>
+                <br />
+                <br />
+                <span className="text-foreground/40">**Price:** $79.99</span>
+                <br />
+                <br />
+                <span className="text-foreground/40">
+                  Noise-cancelling over-ear headphones with 30h battery life.
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
       </section>
+
+      {/* Footer */}
+      <footer className="animate-in animate-in-delay-4 mt-14 border-t border-border pt-6">
+        <p className="font-mono text-xs text-muted">
+          <span className="text-accent">npm</span> install next-md-negotiate
+        </p>
+      </footer>
     </main>
   );
 }
