@@ -302,6 +302,41 @@ describe('CLI init', () => {
     });
   });
 
+  describe('--add-hints flag', () => {
+    it('injects LlmHint when config has entries', () => {
+      mkdirSync(join(tmpDir, 'app', 'products', '[productId]'), { recursive: true });
+      writeFileSync(join(tmpDir, 'md.config.ts'), `import { createMdVersion } from 'next-md-negotiate';
+export const mdConfig = [
+  createMdVersion('/products/[productId]', async ({ productId }) => {
+    return \`# Product \${productId}\`;
+  }),
+];
+`);
+      writeFileSync(join(tmpDir, 'app', 'products', '[productId]', 'page.tsx'), `export default function ProductPage() {
+  return (
+    <div>
+      <h1>Product</h1>
+    </div>
+  );
+}
+`);
+
+      const output = runWithArgs(tmpDir, 'init --rewrites --add-hints');
+      const content = readFileSync(join(tmpDir, 'app', 'products', '[productId]', 'page.tsx'), 'utf-8');
+
+      expect(content).toContain('LlmHint');
+      expect(output).toContain('Injected LlmHint');
+    });
+
+    it('handles fresh config with no entries gracefully', () => {
+      mkdirSync(join(tmpDir, 'app'), { recursive: true });
+      const output = runWithArgs(tmpDir, 'init --rewrites --add-hints');
+
+      expect(output).toContain('Created md.config.ts');
+      expect(output).not.toContain('Injected LlmHint');
+    });
+  });
+
   describe('--middleware flag', () => {
     it('prints createNegotiatorFromConfig instructions', () => {
       mkdirSync(join(tmpDir, 'app'), { recursive: true });

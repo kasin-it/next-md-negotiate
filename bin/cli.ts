@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import * as clack from "@clack/prompts";
 import { isTTY, logSuccess, logWarn, logInfo, logError } from "./utils/log.js";
-import { detectProject, findMdConfig } from "./utils/project.js";
+import { type ProjectInfo, detectProject, findMdConfig } from "./utils/project.js";
 import { applyRewritesCodemod, printMiddlewareInstructions, printGenericInstructions } from "./utils/rewrites.js";
 import { extractDefaultHintText, extractConfigEntries, resolvePageFile, injectLlmHint, removeLlmHint } from "./utils/hints.js";
 
@@ -28,6 +28,44 @@ export const mdConfig = [
   // }),
 ];
 `;
+
+// --- Shared ---
+
+function applyHints(cwd: string, project: ProjectInfo, mdConfigPath: string) {
+  const configContent = readFileSync(mdConfigPath, "utf-8");
+  const defaultHintText = extractDefaultHintText(configContent);
+  const entries = extractConfigEntries(configContent);
+
+  if (entries.length === 0) {
+    logWarn("No createMdVersion() entries found in config.");
+    return;
+  }
+
+  for (const entry of entries) {
+    if (entry.skipHint) {
+      logWarn(`Skipped ${entry.pattern} (skipHint: true)`);
+      continue;
+    }
+
+    const pageFile = resolvePageFile(cwd, entry.pattern, project.useSrc, project.hasAppDir);
+    if (!pageFile) {
+      logWarn(`Could not find page file for pattern: ${entry.pattern}`);
+      continue;
+    }
+
+    const content = readFileSync(pageFile, "utf-8");
+    const hintText = entry.hintText ?? defaultHintText;
+    const updated = injectLlmHint(content, hintText);
+
+    if (updated === null) {
+      logWarn(`Skipped ${pageFile.replace(cwd + "/", "")} (already has LlmHint)`);
+      continue;
+    }
+
+    writeFileSync(pageFile, updated);
+    logSuccess(`Injected LlmHint into ${pageFile.replace(cwd + "/", "")}`);
+  }
+}
 
 // --- Commands ---
 
@@ -62,6 +100,8 @@ async function runInit(args: string[]) {
     process.exit(1);
   }
 
+  let configExisted = false;
+
   try {
     if (project.hasAppDir) {
       const appDir = join(cwd, project.useSrc ? "src" : "", "app");
@@ -93,6 +133,7 @@ async function runInit(args: string[]) {
 
     if (existsSync(configPath)) {
       logWarn("Skipped md.config.ts (already exists)");
+      configExisted = true;
     } else {
       writeFileSync(configPath, MD_CONFIG);
       logSuccess("Created md.config.ts");
@@ -139,7 +180,30 @@ async function runInit(args: string[]) {
     printGenericInstructions();
   }
 
-  logInfo("Define your routes in md.config.ts");
+  // Optional: add LLM hints
+  if (flags.has("--add-hints")) {
+    const mdConfigPath = findMdConfig(cwd, project.configDir);
+    if (mdConfigPath) applyHints(cwd, project, mdConfigPath);
+  } else if (isTTY && configExisted) {
+    const mdConfigPath = findMdConfig(cwd, project.configDir);
+    if (mdConfigPath) {
+      const configContent = readFileSync(mdConfigPath, "utf-8");
+      const entries = extractConfigEntries(configContent);
+      if (entries.length > 0) {
+        const shouldAddHints = await clack.confirm({
+          message: "Add LlmHint to your pages for LLM discoverability?",
+          initialValue: false,
+        });
+        if (!clack.isCancel(shouldAddHints) && shouldAddHints) {
+          applyHints(cwd, project, mdConfigPath);
+        }
+      }
+    }
+  }
+
+  if (!configExisted) {
+    logInfo("Define your routes in md.config.ts, then run 'npx next-md-negotiate add-hints' for LLM discoverability.");
+  }
   if (isTTY) clack.outro("You're all set!");
 }
 
@@ -160,39 +224,7 @@ async function runAddHints() {
     process.exit(1);
   }
 
-  const configContent = readFileSync(mdConfigPath, "utf-8");
-  const defaultHintText = extractDefaultHintText(configContent);
-  const entries = extractConfigEntries(configContent);
-
-  if (entries.length === 0) {
-    logWarn("No createMdVersion() entries found in config.");
-    return;
-  }
-
-  for (const entry of entries) {
-    if (entry.skipHint) {
-      logWarn(`Skipped ${entry.pattern} (skipHint: true)`);
-      continue;
-    }
-
-    const pageFile = resolvePageFile(cwd, entry.pattern, project.useSrc, project.hasAppDir);
-    if (!pageFile) {
-      logWarn(`Could not find page file for pattern: ${entry.pattern}`);
-      continue;
-    }
-
-    const content = readFileSync(pageFile, "utf-8");
-    const hintText = entry.hintText ?? defaultHintText;
-    const updated = injectLlmHint(content, hintText);
-
-    if (updated === null) {
-      logWarn(`Skipped ${pageFile.replace(cwd + "/", "")} (already has LlmHint)`);
-      continue;
-    }
-
-    writeFileSync(pageFile, updated);
-    logSuccess(`Injected LlmHint into ${pageFile.replace(cwd + "/", "")}`);
-  }
+  applyHints(cwd, project, mdConfigPath);
 }
 
 async function runRemoveHints() {

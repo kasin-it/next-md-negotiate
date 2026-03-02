@@ -28,7 +28,7 @@ No new URLs. No duplicate routing. The client just sets an `Accept` header.
 npm install next-md-negotiate
 ```
 
-> Or run `npx next-md-negotiate init` to scaffold the files below automatically.
+> To scaffold everything automatically, run `npx next-md-negotiate init`.
 
 ## Quick start
 
@@ -299,7 +299,7 @@ React component that renders a `<script type="text/llms.txt">` tag to help LLM a
 
 | Command | Description |
 |---|---|
-| `next-md-negotiate init` | Scaffold route handler, config file, and rewrites |
+| `next-md-negotiate init` | Scaffold route handler, config file, and rewrites. Offers to add LLM hints when routes are already defined. Pass `--add-hints` to skip the prompt. |
 | `next-md-negotiate add-hints` | Inject `LlmHint` into page files for all configured routes |
 | `next-md-negotiate remove-hints` | Remove `LlmHint` from page files for all configured routes |
 
