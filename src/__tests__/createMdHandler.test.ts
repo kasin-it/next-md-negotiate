@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { createMdHandler } from '../createMdHandler.js';
 import type { MdVersionHandler } from '../types.js';
 
-function makeParams(path: string[]) {
+function makeParams(path?: string[]) {
   return { params: Promise.resolve({ path }) };
 }
 
@@ -91,6 +91,15 @@ describe('createMdHandler', () => {
       const handler = createMdHandler(registry);
       const res = await handler(new Request('http://localhost'), makeParams([]));
 
+      expect(await res.text()).toBe('# Home');
+    });
+
+    it('handles undefined path from optional catch-all [[...path]]', async () => {
+      const registry = makeRegistry(['/', async () => '# Home']);
+      const handler = createMdHandler(registry);
+      const res = await handler(new Request('http://localhost'), makeParams(undefined));
+
+      expect(res.status).toBe(200);
       expect(await res.text()).toBe('# Home');
     });
   });

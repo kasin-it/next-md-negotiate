@@ -2,10 +2,14 @@ import type { MdVersionHandler } from './types.js';
 import { matchPath } from './matchPath.js';
 
 /**
- * Creates a Next.js route handler for the catch-all `/md-api/[...path]` route.
+ * Creates a Next.js route handler for the `/md-api/[[...path]]` route.
+ *
+ * Supports both `[...path]` (required catch-all) and `[[...path]]`
+ * (optional catch-all). The optional variant is needed to handle
+ * the root `/` route, where `path` will be `undefined`.
  *
  * @example
- * // app/md-api/[...path]/route.ts
+ * // app/md-api/[[...path]]/route.ts
  * import { createMdHandler } from 'next-md-negotiate';
  * import registry from '@/md.config';
  *
@@ -13,13 +17,13 @@ import { matchPath } from './matchPath.js';
  */
 export function createMdHandler(
   registry: MdVersionHandler[]
-): (req: Request, ctx: { params: Promise<{ path: string[] }> }) => Promise<Response> {
+): (req: Request, ctx: { params: Promise<{ path?: string[] }> }) => Promise<Response> {
   return async function GET(
     _req: Request,
-    { params }: { params: Promise<{ path: string[] }> }
+    { params }: { params: Promise<{ path?: string[] }> }
   ): Promise<Response> {
     const { path } = await params;
-    const incomingPath = '/' + path.join('/');
+    const incomingPath = '/' + (path ?? []).join('/');
 
     for (const route of registry) {
       const match = matchPath(route.pattern, incomingPath);
