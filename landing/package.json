@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "next": "16.1.6",
-    "next-md-negotiate": "1.1.2",
+    "next-md-negotiate": "1.1.3",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },
