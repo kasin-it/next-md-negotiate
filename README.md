@@ -293,7 +293,7 @@ React component that renders a `<script type="text/llms.txt">` tag to help LLM a
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| `message` | `string` | `'This page is available as clean Markdown...'` | The hint text inside the script tag |
+| `message` | `string` | `'You are viewing the HTML version of this page...'` | The hint text inside the script tag |
 
 ### CLI commands
 

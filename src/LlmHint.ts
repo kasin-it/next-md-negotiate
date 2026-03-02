@@ -1,8 +1,10 @@
 import { createElement } from 'react';
 
 const DEFAULT_MESSAGE =
-  'This page is available as clean Markdown.\n' +
-  'Re-request this URL with the header: Accept: text/markdown';
+  'You are viewing the HTML version of this page. ' +
+  'A structured markdown version is available and is significantly smaller and easier to parse. ' +
+  'To receive the markdown version, re-request this exact URL with the HTTP header `Accept: text/markdown`. ' +
+  'Other pages on this site may also support this content negotiation.';
 
 export interface LlmHintProps {
   message?: string;
