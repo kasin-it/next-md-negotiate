@@ -119,6 +119,8 @@ describe('CLI init', () => {
     it('shows usage for invalid command', () => {
       const output = runWithArgs(tmpDir, 'invalid');
       expect(output).toContain('Usage');
+      expect(output).toContain('add-hints');
+      expect(output).toContain('remove-hints');
     });
   });
 
@@ -322,5 +324,378 @@ describe('CLI init', () => {
       expect(output).toContain('createNegotiatorFromConfig');
       expect(output).toContain('middleware');
     });
+  });
+});
+
+describe('CLI add-hints', () => {
+  it('injects into App Router page files', () => {
+    mkdirSync(join(tmpDir, 'app', 'products', '[productId]'), { recursive: true });
+    writeFileSync(join(tmpDir, 'md.config.ts'), `import { createMdVersion } from 'next-md-negotiate';
+export const mdConfig = [
+  createMdVersion('/products/[productId]', async ({ productId }) => {
+    return \`# Product \${productId}\`;
+  }),
+];
+`);
+    writeFileSync(join(tmpDir, 'app', 'products', '[productId]', 'page.tsx'), `export default function ProductPage() {
+  return (
+    <div>
+      <h1>Product</h1>
+    </div>
+  );
+}
+`);
+
+    const output = runWithArgs(tmpDir, 'add-hints');
+    const content = readFileSync(join(tmpDir, 'app', 'products', '[productId]', 'page.tsx'), 'utf-8');
+
+    expect(content).toContain('LlmHint');
+    expect(content).toContain("import { LlmHint } from 'next-md-negotiate'");
+    expect(output).toContain('Injected LlmHint');
+  });
+
+  it('passes custom hint message from config', () => {
+    mkdirSync(join(tmpDir, 'app', 'products', '[productId]'), { recursive: true });
+    writeFileSync(join(tmpDir, 'md.config.ts'), `import { createMdVersion } from 'next-md-negotiate';
+export const mdConfig = [
+  createMdVersion('/products/[productId]', async ({ productId }) => {
+    return \`# Product \${productId}\`;
+  }, { hintText: 'Custom message here' }),
+];
+`);
+    writeFileSync(join(tmpDir, 'app', 'products', '[productId]', 'page.tsx'), `export default function ProductPage() {
+  return (
+    <div>
+      <h1>Product</h1>
+    </div>
+  );
+}
+`);
+
+    runWithArgs(tmpDir, 'add-hints');
+    const content = readFileSync(join(tmpDir, 'app', 'products', '[productId]', 'page.tsx'), 'utf-8');
+
+    expect(content).toContain('<LlmHint message="Custom message here" />');
+  });
+
+  it('uses defaultHintText when no per-route hintText', () => {
+    mkdirSync(join(tmpDir, 'app', 'products', '[productId]'), { recursive: true });
+    mkdirSync(join(tmpDir, 'app', 'blog', '[slug]'), { recursive: true });
+    writeFileSync(join(tmpDir, 'md.config.ts'), `import { createMdVersion } from 'next-md-negotiate';
+
+export const defaultHintText = 'Global hint message';
+
+export const mdConfig = [
+  createMdVersion('/products/[productId]', async ({ productId }) => {
+    return \`# Product \${productId}\`;
+  }),
+  createMdVersion('/blog/[slug]', async ({ slug }) => {
+    return \`# Blog \${slug}\`;
+  }, { hintText: 'Per-route override' }),
+];
+`);
+    writeFileSync(join(tmpDir, 'app', 'products', '[productId]', 'page.tsx'), `export default function ProductPage() {
+  return (
+    <div>
+      <h1>Product</h1>
+    </div>
+  );
+}
+`);
+    writeFileSync(join(tmpDir, 'app', 'blog', '[slug]', 'page.tsx'), `export default function BlogPage() {
+  return (
+    <div>
+      <h1>Blog</h1>
+    </div>
+  );
+}
+`);
+
+    runWithArgs(tmpDir, 'add-hints');
+
+    const productContent = readFileSync(join(tmpDir, 'app', 'products', '[productId]', 'page.tsx'), 'utf-8');
+    expect(productContent).toContain('<LlmHint message="Global hint message" />');
+
+    const blogContent = readFileSync(join(tmpDir, 'app', 'blog', '[slug]', 'page.tsx'), 'utf-8');
+    expect(blogContent).toContain('<LlmHint message="Per-route override" />');
+  });
+
+  it('skips files that already have LlmHint', () => {
+    mkdirSync(join(tmpDir, 'app', 'products', '[productId]'), { recursive: true });
+    writeFileSync(join(tmpDir, 'md.config.ts'), `import { createMdVersion } from 'next-md-negotiate';
+export const mdConfig = [
+  createMdVersion('/products/[productId]', async ({ productId }) => {
+    return \`# Product \${productId}\`;
+  }),
+];
+`);
+    writeFileSync(join(tmpDir, 'app', 'products', '[productId]', 'page.tsx'), `import { LlmHint } from 'next-md-negotiate';
+export default function ProductPage() {
+  return (
+    <>
+      <LlmHint />
+      <div><h1>Product</h1></div>
+    </>
+  );
+}
+`);
+
+    const output = runWithArgs(tmpDir, 'add-hints');
+    expect(output).toContain('already has LlmHint');
+  });
+
+  it('handles fragment root JSX', () => {
+    mkdirSync(join(tmpDir, 'app', 'products', '[productId]'), { recursive: true });
+    writeFileSync(join(tmpDir, 'md.config.ts'), `import { createMdVersion } from 'next-md-negotiate';
+export const mdConfig = [
+  createMdVersion('/products/[productId]', async ({ productId }) => {
+    return \`# Product \${productId}\`;
+  }),
+];
+`);
+    writeFileSync(join(tmpDir, 'app', 'products', '[productId]', 'page.tsx'), `export default function ProductPage() {
+  return (
+    <>
+      <h1>Product</h1>
+      <p>Description</p>
+    </>
+  );
+}
+`);
+
+    runWithArgs(tmpDir, 'add-hints');
+    const content = readFileSync(join(tmpDir, 'app', 'products', '[productId]', 'page.tsx'), 'utf-8');
+
+    expect(content).toContain('<LlmHint />');
+    // Should not double-wrap in fragments
+    expect(content.match(/<>/g)?.length).toBe(1);
+  });
+
+  it('handles src/ directory', () => {
+    mkdirSync(join(tmpDir, 'src', 'app', 'products', '[productId]'), { recursive: true });
+    writeFileSync(join(tmpDir, 'src', 'md.config.ts'), `import { createMdVersion } from 'next-md-negotiate';
+export const mdConfig = [
+  createMdVersion('/products/[productId]', async ({ productId }) => {
+    return \`# Product \${productId}\`;
+  }),
+];
+`);
+    writeFileSync(join(tmpDir, 'src', 'app', 'products', '[productId]', 'page.tsx'), `export default function ProductPage() {
+  return (
+    <div>
+      <h1>Product</h1>
+    </div>
+  );
+}
+`);
+
+    const output = runWithArgs(tmpDir, 'add-hints');
+    const content = readFileSync(join(tmpDir, 'src', 'app', 'products', '[productId]', 'page.tsx'), 'utf-8');
+
+    expect(content).toContain('LlmHint');
+    expect(output).toContain('Injected LlmHint');
+  });
+
+  it('handles Pages Router file resolution', () => {
+    mkdirSync(join(tmpDir, 'pages', 'products'), { recursive: true });
+    writeFileSync(join(tmpDir, 'md.config.ts'), `import { createMdVersion } from 'next-md-negotiate';
+export const mdConfig = [
+  createMdVersion('/products/[productId]', async ({ productId }) => {
+    return \`# Product \${productId}\`;
+  }),
+];
+`);
+    writeFileSync(join(tmpDir, 'pages', 'products', '[productId].tsx'), `export default function ProductPage() {
+  return (
+    <div>
+      <h1>Product</h1>
+    </div>
+  );
+}
+`);
+
+    const output = runWithArgs(tmpDir, 'add-hints');
+    const content = readFileSync(join(tmpDir, 'pages', 'products', '[productId].tsx'), 'utf-8');
+
+    expect(content).toContain('LlmHint');
+    expect(output).toContain('Injected LlmHint');
+  });
+
+  it('warns when page file not found', () => {
+    mkdirSync(join(tmpDir, 'app'), { recursive: true });
+    writeFileSync(join(tmpDir, 'md.config.ts'), `import { createMdVersion } from 'next-md-negotiate';
+export const mdConfig = [
+  createMdVersion('/nonexistent', async () => '# Hello'),
+];
+`);
+
+    const output = runWithArgs(tmpDir, 'add-hints');
+    expect(output).toContain('Could not find page file');
+  });
+
+  it('errors when md.config.ts not found', () => {
+    mkdirSync(join(tmpDir, 'app'), { recursive: true });
+
+    const output = runWithArgs(tmpDir, 'add-hints');
+    expect(output).toContain('Could not find md.config');
+  });
+
+  it('skips routes with skipHint: true', () => {
+    mkdirSync(join(tmpDir, 'app', 'products', '[productId]'), { recursive: true });
+    mkdirSync(join(tmpDir, 'app', 'internal'), { recursive: true });
+    writeFileSync(join(tmpDir, 'md.config.ts'), `import { createMdVersion } from 'next-md-negotiate';
+export const mdConfig = [
+  createMdVersion('/products/[productId]', async ({ productId }) => {
+    return \`# Product \${productId}\`;
+  }),
+  createMdVersion('/internal', async () => {
+    return '# Internal';
+  }, { skipHint: true }),
+];
+`);
+    writeFileSync(join(tmpDir, 'app', 'products', '[productId]', 'page.tsx'), `export default function ProductPage() {
+  return (
+    <div>
+      <h1>Product</h1>
+    </div>
+  );
+}
+`);
+    writeFileSync(join(tmpDir, 'app', 'internal', 'page.tsx'), `export default function InternalPage() {
+  return (
+    <div>
+      <h1>Internal</h1>
+    </div>
+  );
+}
+`);
+
+    const output = runWithArgs(tmpDir, 'add-hints');
+
+    // Product page should get the hint
+    const productContent = readFileSync(join(tmpDir, 'app', 'products', '[productId]', 'page.tsx'), 'utf-8');
+    expect(productContent).toContain('LlmHint');
+
+    // Internal page should be skipped
+    const internalContent = readFileSync(join(tmpDir, 'app', 'internal', 'page.tsx'), 'utf-8');
+    expect(internalContent).not.toContain('LlmHint');
+
+    expect(output).toContain('skipHint: true');
+  });
+});
+
+describe('CLI remove-hints', () => {
+  it('removes LlmHint tag and standalone import', () => {
+    mkdirSync(join(tmpDir, 'app', 'products', '[productId]'), { recursive: true });
+    writeFileSync(join(tmpDir, 'md.config.ts'), `import { createMdVersion } from 'next-md-negotiate';
+export const mdConfig = [
+  createMdVersion('/products/[productId]', async ({ productId }) => {
+    return \`# Product \${productId}\`;
+  }),
+];
+`);
+    writeFileSync(join(tmpDir, 'app', 'products', '[productId]', 'page.tsx'), `import { LlmHint } from 'next-md-negotiate';
+
+export default function ProductPage() {
+  return (
+    <>
+      <LlmHint />
+      <div><h1>Product</h1></div>
+    </>
+  );
+}
+`);
+
+    const output = runWithArgs(tmpDir, 'remove-hints');
+    const content = readFileSync(join(tmpDir, 'app', 'products', '[productId]', 'page.tsx'), 'utf-8');
+
+    expect(content).not.toContain('LlmHint');
+    expect(output).toContain('Removed LlmHint');
+  });
+
+  it('removes LlmHint with message prop', () => {
+    mkdirSync(join(tmpDir, 'app', 'products', '[productId]'), { recursive: true });
+    writeFileSync(join(tmpDir, 'md.config.ts'), `import { createMdVersion } from 'next-md-negotiate';
+export const mdConfig = [
+  createMdVersion('/products/[productId]', async ({ productId }) => {
+    return \`# Product \${productId}\`;
+  }),
+];
+`);
+    writeFileSync(join(tmpDir, 'app', 'products', '[productId]', 'page.tsx'), `import { LlmHint } from 'next-md-negotiate';
+
+export default function ProductPage() {
+  return (
+    <>
+      <LlmHint message="Custom hint" />
+      <div><h1>Product</h1></div>
+    </>
+  );
+}
+`);
+
+    const output = runWithArgs(tmpDir, 'remove-hints');
+    const content = readFileSync(join(tmpDir, 'app', 'products', '[productId]', 'page.tsx'), 'utf-8');
+
+    expect(content).not.toContain('LlmHint');
+    expect(output).toContain('Removed LlmHint');
+  });
+
+  it('removes LlmHint from combined imports', () => {
+    mkdirSync(join(tmpDir, 'app', 'products', '[productId]'), { recursive: true });
+    writeFileSync(join(tmpDir, 'md.config.ts'), `import { createMdVersion } from 'next-md-negotiate';
+export const mdConfig = [
+  createMdVersion('/products/[productId]', async ({ productId }) => {
+    return \`# Product \${productId}\`;
+  }),
+];
+`);
+    writeFileSync(join(tmpDir, 'app', 'products', '[productId]', 'page.tsx'), `import { createMdVersion, LlmHint } from 'next-md-negotiate';
+
+export default function ProductPage() {
+  return (
+    <>
+      <LlmHint />
+      <div><h1>Product</h1></div>
+    </>
+  );
+}
+`);
+
+    runWithArgs(tmpDir, 'remove-hints');
+    const content = readFileSync(join(tmpDir, 'app', 'products', '[productId]', 'page.tsx'), 'utf-8');
+
+    expect(content).not.toContain('LlmHint');
+    expect(content).toContain('createMdVersion');
+    expect(content).toContain("from 'next-md-negotiate'");
+  });
+
+  it('leaves fragments in place', () => {
+    mkdirSync(join(tmpDir, 'app', 'products', '[productId]'), { recursive: true });
+    writeFileSync(join(tmpDir, 'md.config.ts'), `import { createMdVersion } from 'next-md-negotiate';
+export const mdConfig = [
+  createMdVersion('/products/[productId]', async ({ productId }) => {
+    return \`# Product \${productId}\`;
+  }),
+];
+`);
+    writeFileSync(join(tmpDir, 'app', 'products', '[productId]', 'page.tsx'), `import { LlmHint } from 'next-md-negotiate';
+
+export default function ProductPage() {
+  return (
+    <>
+      <LlmHint />
+      <div><h1>Product</h1></div>
+    </>
+  );
+}
+`);
+
+    runWithArgs(tmpDir, 'remove-hints');
+    const content = readFileSync(join(tmpDir, 'app', 'products', '[productId]', 'page.tsx'), 'utf-8');
+
+    // Fragments should remain (harmless)
+    expect(content).toContain('<>');
+    expect(content).toContain('</>');
   });
 });

@@ -16,4 +16,6 @@ export type ExtractParams<T extends string> =
 export interface MdVersionHandler {
   pattern: string;
   handler: (params: Record<string, string>) => Promise<string>;
+  hintText?: string;
+  skipHint?: boolean;
 }

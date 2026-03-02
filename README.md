@@ -163,9 +163,65 @@ curl http://localhost:3000/products/42
 curl -H "Accept: text/markdown" http://localhost:3000/products/42
 ```
 
+## LLM discoverability
+
+LLM agents visiting your pages get HTML with no indication a cleaner Markdown version exists. The `LlmHint` component adds a `<script type="text/llms.txt">` tag — invisible to browsers, visible to LLMs — that tells agents they can re-request with `Accept: text/markdown`. Inspired by [Vercel's inline LLM instructions proposal](https://vercel.com/blog/a-proposal-for-inline-llm-instructions-in-html).
+
+### Auto-inject
+
+Add hints to all pages that have a Markdown version defined in your config:
+
+```bash
+npx next-md-negotiate add-hints
+```
+
+Remove them:
+
+```bash
+npx next-md-negotiate remove-hints
+```
+
+### Manual approach
+
+Import and add the `LlmHint` component to any page:
+
+```tsx
+import { LlmHint } from 'next-md-negotiate';
+
+export default function ProductPage() {
+  return (
+    <>
+      <LlmHint />
+      <div>{/* your page content */}</div>
+    </>
+  );
+}
+```
+
+### Custom hint messages
+
+Set a global default in your config — it applies to all routes unless overridden per-route:
+
+```ts
+// md.config.ts
+export const defaultHintText = 'Markdown available. Re-request with Accept: text/markdown';
+
+export const mdConfig = [
+  createMdVersion('/products/[productId]', handler),                         // uses default
+  createMdVersion('/blog/[slug]', handler, { hintText: 'Per-route hint' }), // overrides default
+  createMdVersion('/internal', handler, { skipHint: true }),                 // skipped entirely
+];
+```
+
+Or directly on the component:
+
+```tsx
+<LlmHint message="Custom instructions for LLM agents" />
+```
+
 ## API
 
-### `createMdVersion(pattern, handler)`
+### `createMdVersion(pattern, handler, options?)`
 
 Defines a Markdown version for a route.
 
@@ -174,6 +230,13 @@ createMdVersion('/products/[productId]', async ({ productId }) => {
   return `# Product ${productId}`;
 });
 ```
+
+**Options:**
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `hintText` | `string` | `undefined` | Custom message for the `LlmHint` component when using `add-hints`. Overrides `defaultHintText`. |
+| `skipHint` | `boolean` | `undefined` | Skip this route when running `add-hints` |
 
 **Supported patterns:**
 - Named params: `/products/[productId]`
@@ -218,6 +281,27 @@ const md = createNegotiatorFromConfig(mdConfig);
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `internalPrefix` | `string` | `'/md-api'` | Internal rewrite destination prefix |
+
+### `LlmHint`
+
+React component that renders a `<script type="text/llms.txt">` tag to help LLM agents discover the Markdown version of a page.
+
+```tsx
+<LlmHint />
+<LlmHint message="Custom instructions for agents" />
+```
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `message` | `string` | `'This page is available as clean Markdown...'` | The hint text inside the script tag |
+
+### CLI commands
+
+| Command | Description |
+|---|---|
+| `next-md-negotiate init` | Scaffold route handler, config file, and rewrites |
+| `next-md-negotiate add-hints` | Inject `LlmHint` into page files for all configured routes |
+| `next-md-negotiate remove-hints` | Remove `LlmHint` from page files for all configured routes |
 
 ### `createMarkdownRewrites(options)` / `createMarkdownNegotiator(options)`
 

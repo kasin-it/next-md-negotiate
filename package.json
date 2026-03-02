@@ -1,6 +1,6 @@
 {
   "name": "next-md-negotiate",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Content negotiation for Next.js - serve Markdown to LLMs, HTML to browsers, from a single URL",
   "type": "module",
   "exports": {
@@ -45,9 +45,13 @@
     "url": "https://github.com/kasin-it/next-md-negotiate"
   },
   "peerDependencies": {
-    "next": ">=14.0.0"
+    "next": ">=14.0.0",
+    "react": ">=18.0.0"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.8",
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
     "tsup": "^8.0.0",
     "typescript": "^5.0.0",
     "vitest": "^4.0.18"

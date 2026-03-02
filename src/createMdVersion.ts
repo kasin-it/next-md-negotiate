@@ -1,6 +1,11 @@
 import type { ExtractParams, MdVersionHandler } from './types.js';
 import { validatePattern } from './validatePattern.js';
 
+export interface MdVersionOptions {
+  hintText?: string;
+  skipHint?: boolean;
+}
+
 /**
  * Defines a markdown version for a route.
  *
@@ -12,8 +17,14 @@ import { validatePattern } from './validatePattern.js';
  */
 export function createMdVersion<T extends string>(
   pattern: T,
-  handler: (params: ExtractParams<T>) => Promise<string>
+  handler: (params: ExtractParams<T>) => Promise<string>,
+  options?: MdVersionOptions,
 ): MdVersionHandler {
   validatePattern(pattern);
-  return { pattern, handler: handler as (params: Record<string, string>) => Promise<string> };
+  return {
+    pattern,
+    handler: handler as (params: Record<string, string>) => Promise<string>,
+    hintText: options?.hintText,
+    skipHint: options?.skipHint,
+  };
 }

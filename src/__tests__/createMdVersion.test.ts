@@ -34,4 +34,29 @@ describe('createMdVersion', () => {
     const output = await result.handler({ org: 'vercel', repo: 'next' });
     expect(output).toBe('# vercel/next');
   });
+
+  it('stores hintText when options provided', () => {
+    const result = createMdVersion(
+      '/products/[id]',
+      async () => '# Hello',
+      { hintText: 'Custom hint' }
+    );
+
+    expect(result.hintText).toBe('Custom hint');
+  });
+
+  it('hintText is undefined when options omitted', () => {
+    const result = createMdVersion('/products/[id]', async () => '# Hello');
+    expect(result.hintText).toBeUndefined();
+  });
+
+  it('stores skipHint when options provided', () => {
+    const result = createMdVersion(
+      '/internal/[id]',
+      async () => '# Internal',
+      { skipHint: true }
+    );
+
+    expect(result.skipHint).toBe(true);
+  });
 });
