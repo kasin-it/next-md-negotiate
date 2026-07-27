@@ -1,9 +1,10 @@
 import { LlmHint } from "next-md-negotiate";
-import Link from "next/link";
+import { CodeBlock } from "../../components/code-block";
+import { DocsPager } from "../../components/docs-pager";
 
 export default function ConceptsPage() {
   return (
-    <div className="prose-terminal">
+    <div className="prose-docs">
       <LlmHint />
       <h1>Core Concepts</h1>
       <p className="subtitle">
@@ -104,55 +105,29 @@ export default function ConceptsPage() {
       </p>
 
       <h3>Static routes</h3>
-      <div className="code-block">
-        <span className="function">createMdVersion</span>(
-        <span className="string">{`'/about'`}</span>,{" "}
-        <span className="keyword">async</span> () =&gt; {"{"}
-        {"\n  "}
-        <span className="keyword">return</span>{" "}
-        <span className="string">{`'# About Us\\n...'`}</span>;{"\n}"}
-        );
-      </div>
+      <CodeBlock>{`createMdVersion('/about', async () => {
+  return '# About Us\\n...';
+});`}</CodeBlock>
 
       <h3>Dynamic parameters</h3>
-      <div className="code-block">
-        <span className="comment">
-          {"// [param] → { param: string }"}
-        </span>
-        {"\n"}
-        <span className="function">createMdVersion</span>(
-        <span className="string">{`'/products/[productId]'`}</span>,{"\n  "}
-        <span className="keyword">async</span> {"({ productId }) => { ... }\n);\n\n"}
-        <span className="comment">
-          {"// Multiple params"}
-        </span>
-        {"\n"}
-        <span className="function">createMdVersion</span>(
-        <span className="string">{`'/[org]/[repo]'`}</span>,{"\n  "}
-        <span className="keyword">async</span> {"({ org, repo }) => { ... }\n);"}
-      </div>
+      <CodeBlock>{`// [param] → { param: string }
+createMdVersion('/products/[productId]',
+  async ({ productId }) => { ... }
+);
+
+// Multiple params
+createMdVersion('/[org]/[repo]',
+  async ({ org, repo }) => { ... }
+);`}</CodeBlock>
 
       <h3>Catch-all routes</h3>
-      <div className="code-block">
-        <span className="comment">
-          {"// [...slug] captures nested paths"}
-        </span>
-        {"\n"}
-        <span className="function">createMdVersion</span>(
-        <span className="string">{`'/docs/[...slug]'`}</span>,{"\n  "}
-        <span className="keyword">async</span> {"({ slug }) => {\n"}
-        {"    "}
-        <span className="comment">
-          {"// /docs/getting-started → { slug: 'getting-started' }"}
-        </span>
-        {"\n"}
-        {"    "}
-        <span className="comment">
-          {"// /docs/api/auth/tokens → { slug: 'api/auth/tokens' }"}
-        </span>
-        {"\n"}
-        {"  }\n);"}
-      </div>
+      <CodeBlock>{`// [...slug] captures nested paths
+createMdVersion('/docs/[...slug]',
+  async ({ slug }) => {
+    // /docs/getting-started → { slug: 'getting-started' }
+    // /docs/api/auth/tokens → { slug: 'api/auth/tokens' }
+  }
+);`}</CodeBlock>
 
       <h2>The request flow</h2>
       <p>
@@ -204,21 +179,7 @@ export default function ConceptsPage() {
       </p>
 
       <hr />
-
-      <div className="flex flex-col sm:flex-row gap-3 not-prose mt-4">
-        <Link
-          href="/docs/quickstart"
-          className="border border-line rounded-lg px-4 py-3 font-mono text-sm text-fg-2 hover:text-t-green hover:border-t-green/30 transition-all"
-        >
-          ← Quick Start
-        </Link>
-        <Link
-          href="/docs/seo"
-          className="border border-line rounded-lg px-4 py-3 font-mono text-sm text-fg-2 hover:text-t-green hover:border-t-green/30 transition-all"
-        >
-          SEO & Crawling →
-        </Link>
-      </div>
+      <DocsPager />
     </div>
   );
 }

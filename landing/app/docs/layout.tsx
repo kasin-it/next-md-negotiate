@@ -6,10 +6,10 @@ export default function DocsLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="pt-14 min-h-screen">
-      <div className="max-w-6xl mx-auto px-5 py-10 sm:py-14 flex gap-10">
+    <div className="min-h-screen">
+      <div className="mx-auto flex max-w-5xl gap-12 px-5 py-10 sm:py-12">
         <DocsSidebar />
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <DocsMobileNav />
           {children}
         </div>

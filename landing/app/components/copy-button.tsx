@@ -18,13 +18,13 @@ export function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={copy}
-      className="font-mono text-[11px] text-fg-3 hover:text-fg-2 transition-colors px-2 py-1 rounded border border-line hover:border-line-2"
+      className="rounded-md border border-line px-2 py-1 font-mono text-[11px] text-fg-3 transition-colors hover:border-line-2 hover:text-fg-2"
       aria-label="Copy to clipboard"
     >
       {copied ? (
-        <span className="text-t-green">copied!</span>
+        <span className="text-ok">Copied</span>
       ) : (
-        <span>copy</span>
+        <span>Copy</span>
       )}
     </button>
   );

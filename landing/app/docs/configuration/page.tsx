@@ -1,9 +1,10 @@
 import { LlmHint } from "next-md-negotiate";
-import Link from "next/link";
+import { CodeBlock } from "../../components/code-block";
+import { DocsPager } from "../../components/docs-pager";
 
 export default function ConfigurationPage() {
   return (
-    <div className="prose-terminal">
+    <div className="prose-docs">
       <LlmHint />
       <h1>Configuration</h1>
       <p className="subtitle">
@@ -17,49 +18,32 @@ export default function ConfigurationPage() {
         markdown routes. It exports an array of route handlers created with{" "}
         <code>createMdVersion</code>:
       </p>
-      <div className="code-block">
-        <span className="keyword">import</span> {"{ "}
-        <span className="type">createMdVersion</span>
-        {" } "}
-        <span className="keyword">from</span>{" "}
-        <span className="string">{`'next-md-negotiate'`}</span>;{"\n\n"}
-        <span className="keyword">export const</span> mdConfig = [{"\n"}
-        {"  "}
-        <span className="function">createMdVersion</span>(
-        <span className="string">{`'/'`}</span>,{" "}
-        <span className="keyword">async</span> () =&gt; {"{"}
-        {"\n    "}
-        <span className="keyword">return</span>{" "}
-        <span className="string">{`'# Home\\n\\nWelcome to our site.'`}</span>;
-        {"\n  }),\n\n  "}
-        <span className="function">createMdVersion</span>(
-        <span className="string">{`'/products/[productId]'`}</span>,{"\n    "}
-        <span className="keyword">async</span> {"({ productId }) => {\n"}
-        {"      "}
-        <span className="keyword">const</span> p ={" "}
-        <span className="keyword">await</span> db.products.find(productId);
-        {"\n      "}
-        <span className="keyword">return</span>{" "}
-        <span className="string">{"`# \\${p.name}\\n\\n**Price:** $\\${p.price}`"}</span>
-        ;{"\n  }),\n\n  "}
-        <span className="function">createMdVersion</span>(
-        <span className="string">{`'/blog/[...slug]'`}</span>,{"\n    "}
-        <span className="keyword">async</span> {"({ slug }) => {\n"}
-        {"      "}
-        <span className="keyword">const</span> post ={" "}
-        <span className="keyword">await</span> getPost(slug);{"\n      "}
-        <span className="keyword">return</span> post.markdown;
-        {"\n  }),\n];"}
-      </div>
+      <CodeBlock>{`import { createMdVersion } from 'next-md-negotiate';
+
+export const mdConfig = [
+  createMdVersion('/', async () => {
+    return '# Home\\n\\nWelcome to our site.';
+  }),
+
+  createMdVersion('/products/[productId]',
+    async ({ productId }) => {
+      const p = await db.products.find(productId);
+      return \`# \${p.name}\\n\\n**Price:** $\${p.price}\`;
+  }),
+
+  createMdVersion('/blog/[...slug]',
+    async ({ slug }) => {
+      const post = await getPost(slug);
+      return post.markdown;
+  }),
+];`}</CodeBlock>
 
       <h2>createMdVersion</h2>
       <p>
         The main function for defining markdown routes. It takes a pattern, a
         handler, and optional configuration:
       </p>
-      <div className="code-block">
-        <span className="function">createMdVersion</span>(pattern, handler, options?)
-      </div>
+      <CodeBlock>{`createMdVersion(pattern, handler, options?)`}</CodeBlock>
 
       <h3>Parameters</h3>
       <table>
@@ -144,60 +128,37 @@ export default function ConfigurationPage() {
 
       <h2>Route patterns</h2>
       <p>Patterns follow Next.js App Router conventions:</p>
-      <div className="code-block">
-        <span className="comment">{"// Static"}</span>
-        {"\n"}
-        <span className="string">{`'/about'`}</span>
-        {"              "}
-        <span className="dim">→ matches /about</span>
-        {"\n\n"}
-        <span className="comment">{"// Dynamic"}</span>
-        {"\n"}
-        <span className="string">{`'/products/[id]'`}</span>
-        {"    "}
-        <span className="dim">→ matches /products/42</span>
-        {"\n"}
-        <span className="string">{`'/[org]/[repo]'`}</span>
-        {"     "}
-        <span className="dim">→ matches /vercel/next.js</span>
-        {"\n\n"}
-        <span className="comment">{"// Catch-all"}</span>
-        {"\n"}
-        <span className="string">{`'/docs/[...slug]'`}</span>
-        {"   "}
-        <span className="dim">→ matches /docs/a/b/c</span>
-        {"\n\n"}
-        <span className="comment">{"// Root"}</span>
-        {"\n"}
-        <span className="string">{`'/'`}</span>
-        {"                   "}
-        <span className="dim">→ matches /</span>
-      </div>
+      <CodeBlock>{`// Static
+'/about'              → matches /about
+
+// Dynamic
+'/products/[id]'    → matches /products/42
+'/[org]/[repo]'     → matches /vercel/next.js
+
+// Catch-all
+'/docs/[...slug]'   → matches /docs/a/b/c
+
+// Root
+'/'                   → matches /`}</CodeBlock>
 
       <h2>Type-safe parameters</h2>
       <p>
         TypeScript automatically infers the correct parameter types from your
         route pattern using the <code>ExtractParams</code> utility type:
       </p>
-      <div className="code-block">
-        <span className="comment">{"// TypeScript knows the exact params"}</span>
-        {"\n\n"}
-        <span className="string">{`'/products/[productId]'`}</span>
-        {"\n  → "}
-        <span className="type">{`{ productId: string }`}</span>
-        {"\n\n"}
-        <span className="string">{`'/[org]/[repo]'`}</span>
-        {"\n  → "}
-        <span className="type">{`{ org: string; repo: string }`}</span>
-        {"\n\n"}
-        <span className="string">{`'/docs/[...slug]'`}</span>
-        {"\n  → "}
-        <span className="type">{`{ slug: string }`}</span>
-        {"\n\n"}
-        <span className="string">{`'/'`}</span>
-        {"\n  → "}
-        <span className="type">{`{}`}</span>
-      </div>
+      <CodeBlock>{`// TypeScript knows the exact params
+
+'/products/[productId]'
+  → { productId: string }
+
+'/[org]/[repo]'
+  → { org: string; repo: string }
+
+'/docs/[...slug]'
+  → { slug: string }
+
+'/'
+  → {}`}</CodeBlock>
 
       <h2>Integration strategies</h2>
       <p>
@@ -211,55 +172,33 @@ export default function ConfigurationPage() {
         overhead — rewrites are evaluated by the Next.js router before your code
         runs.
       </p>
-      <div className="code-block">
-        <span className="comment">{"// next.config.ts"}</span>
-        {"\n"}
-        <span className="keyword">import</span> {"{ "}
-        <span className="type">createRewritesFromConfig</span>
-        {" } "}
-        <span className="keyword">from</span>{" "}
-        <span className="string">{`'next-md-negotiate'`}</span>;{"\n"}
-        <span className="keyword">import</span> {"{ mdConfig } "}
-        <span className="keyword">from</span>{" "}
-        <span className="string">{`'./md.config'`}</span>;{"\n\n"}
-        <span className="keyword">export default</span> {"{\n  "}
-        <span className="keyword">async</span>{" "}
-        <span className="function">rewrites</span>() {"{"}
-        {"\n    "}
-        <span className="keyword">return</span> {"{\n"}
-        {"      beforeFiles: "}
-        <span className="function">createRewritesFromConfig</span>(mdConfig),
-        {"\n    };\n  },\n}"}
-      </div>
+      <CodeBlock>{`// next.config.ts
+import { createRewritesFromConfig } from 'next-md-negotiate';
+import { mdConfig } from './md.config';
+
+export default {
+  async rewrites() {
+    return {
+      beforeFiles: createRewritesFromConfig(mdConfig),
+    };
+  },
+}`}</CodeBlock>
 
       <h3>Strategy 2: Middleware</h3>
       <p>
         Uses Next.js middleware to intercept requests. Gives you more control but
         adds slight runtime overhead.
       </p>
-      <div className="code-block">
-        <span className="comment">{"// middleware.ts"}</span>
-        {"\n"}
-        <span className="keyword">import</span> {"{ "}
-        <span className="type">createNegotiatorFromConfig</span>
-        {" } "}
-        <span className="keyword">from</span>{" "}
-        <span className="string">{`'next-md-negotiate'`}</span>;{"\n"}
-        <span className="keyword">import</span> {"{ mdConfig } "}
-        <span className="keyword">from</span>{" "}
-        <span className="string">{`'./md.config'`}</span>;{"\n\n"}
-        <span className="keyword">const</span> negotiate ={" "}
-        <span className="function">createNegotiatorFromConfig</span>(mdConfig);
-        {"\n\n"}
-        <span className="keyword">export function</span>{" "}
-        <span className="function">middleware</span>(request) {"{"}
-        {"\n  "}
-        <span className="keyword">const</span> response = negotiate(request);
-        {"\n  "}
-        <span className="keyword">if</span> (response){" "}
-        <span className="keyword">return</span> response;
-        {"\n}"}
-      </div>
+      <CodeBlock>{`// middleware.ts
+import { createNegotiatorFromConfig } from 'next-md-negotiate';
+import { mdConfig } from './md.config';
+
+const negotiate = createNegotiatorFromConfig(mdConfig);
+
+export function middleware(request) {
+  const response = negotiate(request);
+  if (response) return response;
+}`}</CodeBlock>
 
       <h3>Comparison</h3>
       <table>
@@ -299,18 +238,10 @@ export default function ConfigurationPage() {
         Both strategies route matched requests to an internal handler. For App
         Router, this lives at <code>app/md-api/[[...path]]/route.ts</code>:
       </p>
-      <div className="code-block">
-        <span className="keyword">import</span> {"{ "}
-        <span className="type">createMdHandler</span>
-        {" } "}
-        <span className="keyword">from</span>{" "}
-        <span className="string">{`'next-md-negotiate'`}</span>;{"\n"}
-        <span className="keyword">import</span> {"{ mdConfig } "}
-        <span className="keyword">from</span>{" "}
-        <span className="string">{`'@/md.config'`}</span>;{"\n\n"}
-        <span className="keyword">export const</span> GET ={" "}
-        <span className="function">createMdHandler</span>(mdConfig);
-      </div>
+      <CodeBlock>{`import { createMdHandler } from 'next-md-negotiate';
+import { mdConfig } from '@/md.config';
+
+export const GET = createMdHandler(mdConfig);`}</CodeBlock>
 
       <div className="info-box">
         <strong>Pages Router:</strong> Use <code>createMdApiHandler</code>{" "}
@@ -319,21 +250,7 @@ export default function ConfigurationPage() {
       </div>
 
       <hr />
-
-      <div className="flex flex-col sm:flex-row gap-3 not-prose mt-4">
-        <Link
-          href="/docs/seo"
-          className="border border-line rounded-lg px-4 py-3 font-mono text-sm text-fg-2 hover:text-t-green hover:border-t-green/30 transition-all"
-        >
-          ← SEO & Crawling
-        </Link>
-        <Link
-          href="/docs/llm-hints"
-          className="border border-line rounded-lg px-4 py-3 font-mono text-sm text-fg-2 hover:text-t-green hover:border-t-green/30 transition-all"
-        >
-          LLM Hints →
-        </Link>
-      </div>
+      <DocsPager />
     </div>
   );
 }

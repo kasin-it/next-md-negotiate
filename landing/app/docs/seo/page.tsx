@@ -1,9 +1,10 @@
 import { LlmHint } from "next-md-negotiate";
 import Link from "next/link";
+import { DocsPager } from "../../components/docs-pager";
 
 export default function SeoPage() {
   return (
-    <div className="prose-terminal">
+    <div className="prose-docs">
       <LlmHint />
       <h1>SEO & Crawling Budget</h1>
       <p className="subtitle">
@@ -184,21 +185,7 @@ export default function SeoPage() {
       </div>
 
       <hr />
-
-      <div className="flex flex-col sm:flex-row gap-3 not-prose mt-4">
-        <Link
-          href="/docs/concepts"
-          className="border border-line rounded-lg px-4 py-3 font-mono text-sm text-fg-2 hover:text-t-green hover:border-t-green/30 transition-all"
-        >
-          ← Core Concepts
-        </Link>
-        <Link
-          href="/docs/configuration"
-          className="border border-line rounded-lg px-4 py-3 font-mono text-sm text-fg-2 hover:text-t-green hover:border-t-green/30 transition-all"
-        >
-          Configuration →
-        </Link>
-      </div>
+      <DocsPager />
     </div>
   );
 }

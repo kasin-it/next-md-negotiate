@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Space_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 
@@ -8,14 +8,16 @@ const geist = Geist({
   subsets: ["latin"],
 });
 
-const spaceMono = Space_Mono({
-  weight: ["400", "700"],
-  variable: "--font-space-mono",
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "next-md-negotiate",
+  title: {
+    default: "next-md-negotiate",
+    template: "%s · next-md-negotiate",
+  },
   description:
     "Serve markdown to LLMs and HTML to humans from the same URL. HTTP content negotiation for Next.js.",
   openGraph: {
@@ -32,50 +34,49 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geist.variable} ${spaceMono.variable}`}>
-      <body className="bg-surface font-sans text-fg antialiased scanlines">
-        <nav className="fixed top-0 z-50 w-full border-b border-line bg-surface/90 backdrop-blur-md">
-          <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5">
+    <html lang="en" className={`${geist.variable} ${geistMono.variable}`}>
+      <body className="bg-surface font-sans text-fg antialiased">
+        <header className="sticky top-0 z-50 border-b border-line bg-surface/90 backdrop-blur-md">
+          <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5">
             <Link
               href="/"
-              className="font-mono text-sm font-bold tracking-tight text-t-green transition-colors hover:text-t-green-dim"
+              className="text-[15px] font-semibold tracking-tight text-fg transition-colors hover:text-fg-2"
             >
-              <span className="text-fg-3 hidden sm:inline">~/</span>
-              next-md
+              next-md-negotiate
             </Link>
 
-            <div className="flex items-center gap-2 sm:gap-5">
+            <nav className="flex items-center gap-1 sm:gap-4">
               <Link
                 href="/docs"
-                className="font-mono text-xs sm:text-sm text-fg-2 transition-colors hover:text-fg"
+                className="rounded-md px-2.5 py-1.5 text-sm text-fg-2 transition-colors hover:text-fg"
               >
-                docs
+                Docs
               </Link>
               <a
                 href="https://github.com/kasin-it/next-md-negotiate"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden sm:inline font-mono text-sm text-fg-2 transition-colors hover:text-fg"
+                className="hidden rounded-md px-2.5 py-1.5 text-sm text-fg-2 transition-colors hover:text-fg sm:inline"
               >
-                github
+                GitHub
               </a>
               <a
                 href="https://www.npmjs.com/package/next-md-negotiate"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden md:inline font-mono text-sm text-fg-2 transition-colors hover:text-fg"
+                className="hidden rounded-md px-2.5 py-1.5 text-sm text-fg-2 transition-colors hover:text-fg md:inline"
               >
                 npm
               </a>
               <Link
                 href="/docs/quickstart"
-                className="ml-1 rounded border border-t-green/25 bg-t-green/5 px-3 py-1.5 font-mono text-[11px] sm:text-xs font-bold text-t-green transition-all hover:bg-t-green/10 hover:border-t-green/40"
+                className="ml-1 rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
               >
-                get started
+                Get started
               </Link>
-            </div>
+            </nav>
           </div>
-        </nav>
+        </header>
 
         {children}
       </body>

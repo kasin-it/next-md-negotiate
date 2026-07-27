@@ -1,9 +1,11 @@
 import { LlmHint } from "next-md-negotiate";
 import Link from "next/link";
+import { CodeBlock } from "../../components/code-block";
+import { DocsPager } from "../../components/docs-pager";
 
 export default function ApiReferencePage() {
   return (
-    <div className="prose-terminal">
+    <div className="prose-docs">
       <LlmHint />
       <h1>API Reference</h1>
       <p className="subtitle">
@@ -18,22 +20,14 @@ export default function ApiReferencePage() {
         Define a markdown route. This is the primary function you use in{" "}
         <code>md.config.ts</code>.
       </p>
-      <div className="code-block">
-        <span className="function">createMdVersion</span>&lt;
-        <span className="type">T</span> <span className="keyword">extends</span>{" "}
-        <span className="type">string</span>&gt;({"\n  "}
-        pattern: <span className="type">T</span>,{"\n  "}
-        handler: (params: <span className="type">ExtractParams</span>&lt;
-        <span className="type">T</span>&gt;) =&gt;{" "}
-        <span className="type">Promise</span>&lt;
-        <span className="type">string</span>&gt;,{"\n  "}
-        options?: {"{"}
-        {"\n    "}hintText?: <span className="type">string</span>;
-        {"\n    "}skipHint?: <span className="type">boolean</span>;
-        {"\n  }"}
-        {"\n): "}
-        <span className="type">MdVersionHandler</span>
-      </div>
+      <CodeBlock>{`createMdVersion<T extends string>(
+  pattern: T,
+  handler: (params: ExtractParams<T>) => Promise<string>,
+  options?: {
+    hintText?: string;
+    skipHint?: boolean;
+  }
+): MdVersionHandler`}</CodeBlock>
 
       <table>
         <thead>
@@ -74,17 +68,12 @@ export default function ApiReferencePage() {
         Create an App Router route handler from your config. Use this in{" "}
         <code>app/md-api/[[...path]]/route.ts</code>.
       </p>
-      <div className="code-block">
-        <span className="function">createMdHandler</span>({"\n  "}
-        registry: <span className="type">MdVersionHandler</span>[]
-        {"\n): ("}
-        {"\n  "}req: <span className="type">Request</span>,
-        {"\n  "}ctx: {"{ "}params: <span className="type">Promise</span>&lt;{"{ "}path?: <span className="type">string</span>[]
-        {" }>"} {"}"}
-        {"\n) => "}
-        <span className="type">Promise</span>&lt;
-        <span className="type">Response</span>&gt;
-      </div>
+      <CodeBlock>{`createMdHandler(
+  registry: MdVersionHandler[]
+): (
+  req: Request,
+  ctx: { params: Promise<{ path?: string[] }> }
+) => Promise<Response>`}</CodeBlock>
       <p>
         Returns a standard web <code>Response</code> with{" "}
         <code>Content-Type: text/markdown; charset=utf-8</code> on match, or
@@ -98,16 +87,12 @@ export default function ApiReferencePage() {
         Create a Pages Router API handler. Use this in{" "}
         <code>pages/api/md-api/[...path].ts</code>.
       </p>
-      <div className="code-block">
-        <span className="function">createMdApiHandler</span>({"\n  "}
-        registry: <span className="type">MdVersionHandler</span>[]
-        {"\n): ("}
-        {"\n  "}req: <span className="type">NextApiRequest</span>,
-        {"\n  "}res: <span className="type">NextApiResponse</span>
-        {"\n) => "}
-        <span className="type">Promise</span>&lt;
-        <span className="type">void</span>&gt;
-      </div>
+      <CodeBlock>{`createMdApiHandler(
+  registry: MdVersionHandler[]
+): (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => Promise<void>`}</CodeBlock>
 
       {/* ── createRewritesFromConfig ───────────── */}
 
@@ -117,14 +102,10 @@ export default function ApiReferencePage() {
         requests with markdown Accept headers and redirect them to the internal
         handler.
       </p>
-      <div className="code-block">
-        <span className="function">createRewritesFromConfig</span>({"\n  "}
-        handlers: <span className="type">MdVersionHandler</span>[],{"\n  "}
-        options?: {"{ "}internalPrefix?: <span className="type">string</span>
-        {" }"}
-        {"\n): "}
-        <span className="type">Rewrite</span>[]
-      </div>
+      <CodeBlock>{`createRewritesFromConfig(
+  handlers: MdVersionHandler[],
+  options?: { internalPrefix?: string }
+): Rewrite[]`}</CodeBlock>
       <p>
         The <code>internalPrefix</code> defaults to <code>/md-api</code>.
         Each rewrite includes a header condition matching{" "}
@@ -140,17 +121,12 @@ export default function ApiReferencePage() {
         rewrite response when a markdown request matches, or{" "}
         <code>undefined</code> to pass through.
       </p>
-      <div className="code-block">
-        <span className="function">createNegotiatorFromConfig</span>({"\n  "}
-        handlers: <span className="type">MdVersionHandler</span>[],{"\n  "}
-        options?: {"{ "}internalPrefix?: <span className="type">string</span>
-        {" }"}
-        {"\n): ("}
-        {"\n  "}request: <span className="type">Request</span>
-        {"\n) => "}
-        <span className="type">NextResponse</span> |{" "}
-        <span className="type">undefined</span>
-      </div>
+      <CodeBlock>{`createNegotiatorFromConfig(
+  handlers: MdVersionHandler[],
+  options?: { internalPrefix?: string }
+): (
+  request: Request
+) => NextResponse | undefined`}</CodeBlock>
 
       {/* ── Lower-level APIs ───────────────────── */}
 
@@ -161,25 +137,18 @@ export default function ApiReferencePage() {
       </p>
 
       <h3>createMarkdownRewrites</h3>
-      <div className="code-block">
-        <span className="function">createMarkdownRewrites</span>(options: {"{"}
-        {"\n  "}routes: <span className="type">string</span>[],
-        {"\n  "}internalPrefix?: <span className="type">string</span>
-        {"\n}): "}
-        <span className="type">Rewrite</span>[]
-      </div>
+      <CodeBlock>{`createMarkdownRewrites(options: {
+  routes: string[],
+  internalPrefix?: string
+}): Rewrite[]`}</CodeBlock>
 
       <h3>createMarkdownNegotiator</h3>
-      <div className="code-block">
-        <span className="function">createMarkdownNegotiator</span>(options: {"{"}
-        {"\n  "}routes: <span className="type">string</span>[],
-        {"\n  "}internalPrefix?: <span className="type">string</span>
-        {"\n}): ("}
-        {"\n  "}request: <span className="type">Request</span>
-        {"\n) => "}
-        <span className="type">NextResponse</span> |{" "}
-        <span className="type">undefined</span>
-      </div>
+      <CodeBlock>{`createMarkdownNegotiator(options: {
+  routes: string[],
+  internalPrefix?: string
+}): (
+  request: Request
+) => NextResponse | undefined`}</CodeBlock>
 
       {/* ── LlmHint ────────────────────────────── */}
 
@@ -187,13 +156,9 @@ export default function ApiReferencePage() {
       <p>
         React component that renders a hidden hint for LLM agents.
       </p>
-      <div className="code-block">
-        <span className="green">{"<LlmHint"}</span>{"\n  "}
-        <span className="type">message</span>?:{" "}
-        <span className="type">string</span>
-        {"\n"}
-        <span className="green">{"/>"}</span>
-      </div>
+      <CodeBlock>{`<LlmHint
+  message?: string
+/>`}</CodeBlock>
       <p>
         Renders <code>{"<script type=\"text/llms.txt\">message</script>"}</code>.
         Invisible to browsers, readable by LLMs. See{" "}
@@ -208,101 +173,50 @@ export default function ApiReferencePage() {
       <p>
         Utility type that extracts parameter names from a route pattern string:
       </p>
-      <div className="code-block">
-        <span className="keyword">type</span>{" "}
-        <span className="type">ExtractParams</span>&lt;
-        <span className="type">T</span> <span className="keyword">extends</span>{" "}
-        <span className="type">string</span>&gt;
-        {"\n\n"}
-        <span className="comment">{"// Examples:"}</span>
-        {"\n"}
-        <span className="type">ExtractParams</span>&lt;
-        <span className="string">{`'/products/[productId]'`}</span>&gt;
-        {"\n  → { "}
-        <span className="type">productId</span>:{" "}
-        <span className="type">string</span>
-        {" }\n\n"}
-        <span className="type">ExtractParams</span>&lt;
-        <span className="string">{`'/[org]/[repo]'`}</span>&gt;
-        {"\n  → { "}
-        <span className="type">org</span>:{" "}
-        <span className="type">string</span>; <span className="type">repo</span>
-        : <span className="type">string</span>
-        {" }\n\n"}
-        <span className="type">ExtractParams</span>&lt;
-        <span className="string">{`'/docs/[...slug]'`}</span>&gt;
-        {"\n  → { "}
-        <span className="type">slug</span>:{" "}
-        <span className="type">string</span>
-        {" }"}
-      </div>
+      <CodeBlock>{`type ExtractParams<T extends string>
+
+// Examples:
+ExtractParams<'/products/[productId]'>
+  → { productId: string }
+
+ExtractParams<'/[org]/[repo]'>
+  → { org: string; repo: string }
+
+ExtractParams<'/docs/[...slug]'>
+  → { slug: string }`}</CodeBlock>
 
       <h3>MdVersionHandler</h3>
-      <div className="code-block">
-        <span className="keyword">interface</span>{" "}
-        <span className="type">MdVersionHandler</span> {"{"}
-        {"\n  "}pattern: <span className="type">string</span>;
-        {"\n  "}handler: (params: <span className="type">Record</span>&lt;
-        <span className="type">string</span>,{" "}
-        <span className="type">string</span>&gt;) =&gt;{" "}
-        <span className="type">Promise</span>&lt;
-        <span className="type">string</span>&gt;;
-        {"\n  "}hintText?: <span className="type">string</span>;
-        {"\n  "}skipHint?: <span className="type">boolean</span>;
-        {"\n}"}
-      </div>
+      <CodeBlock>{`interface MdVersionHandler {
+  pattern: string;
+  handler: (params: Record<string, string>) => Promise<string>;
+  hintText?: string;
+  skipHint?: boolean;
+}`}</CodeBlock>
 
       {/* ── CLI ────────────────────────────────── */}
 
       <h2>CLI Commands</h2>
 
       <h3>init</h3>
-      <div className="code-block">
-        <span className="green">$</span> npx next-md-negotiate init [flags]
-        {"\n\n"}
-        <span className="dim">Flags:</span>
-        {"\n  --rewrites     "}
-        <span className="comment">Use rewrites strategy (skip prompt)</span>
-        {"\n  --middleware   "}
-        <span className="comment">Use middleware strategy (skip prompt)</span>
-        {"\n  --add-hints   "}
-        <span className="comment">Inject LlmHint into pages</span>
-      </div>
+      <CodeBlock>{`$ npx next-md-negotiate init [flags]
+
+Flags:
+  --rewrites     Use rewrites strategy (skip prompt)
+  --middleware   Use middleware strategy (skip prompt)
+  --add-hints    Inject LlmHint into pages`}</CodeBlock>
 
       <h3>add-hints</h3>
-      <div className="code-block">
-        <span className="green">$</span> npx next-md-negotiate add-hints
-        {"\n\n"}
-        <span className="dim">
-          Injects {"<LlmHint />"} into all pages with configured routes.
-        </span>
-      </div>
+      <CodeBlock>{`$ npx next-md-negotiate add-hints
+
+Injects <LlmHint /> into all pages with configured routes.`}</CodeBlock>
 
       <h3>remove-hints</h3>
-      <div className="code-block">
-        <span className="green">$</span> npx next-md-negotiate remove-hints
-        {"\n\n"}
-        <span className="dim">
-          Removes all {"<LlmHint />"} components and imports from pages.
-        </span>
-      </div>
+      <CodeBlock>{`$ npx next-md-negotiate remove-hints
+
+Removes all <LlmHint /> components and imports from pages.`}</CodeBlock>
 
       <hr />
-
-      <div className="flex flex-col sm:flex-row gap-3 not-prose mt-4">
-        <Link
-          href="/docs/llm-hints"
-          className="border border-line rounded-lg px-4 py-3 font-mono text-sm text-fg-2 hover:text-t-green hover:border-t-green/30 transition-all"
-        >
-          ← LLM Hints
-        </Link>
-        <Link
-          href="/docs"
-          className="border border-line rounded-lg px-4 py-3 font-mono text-sm text-fg-2 hover:text-t-green hover:border-t-green/30 transition-all"
-        >
-          Back to Docs
-        </Link>
-      </div>
+      <DocsPager />
     </div>
   );
 }

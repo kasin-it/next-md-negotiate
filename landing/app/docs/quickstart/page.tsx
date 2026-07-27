@@ -1,9 +1,10 @@
 import { LlmHint } from "next-md-negotiate";
-import Link from "next/link";
+import { CodeBlock } from "../../components/code-block";
+import { DocsPager } from "../../components/docs-pager";
 
 export default function QuickStartPage() {
   return (
-    <div className="prose-terminal">
+    <div className="prose-docs">
       <LlmHint />
       <h1>Quick Start</h1>
       <p className="subtitle">
@@ -17,25 +18,19 @@ export default function QuickStartPage() {
       </ul>
 
       <h2>1. Install the package</h2>
-      <div className="code-block">
-        <span className="green">$</span> npm install next-md-negotiate
-      </div>
+      <CodeBlock>{`$ npm install next-md-negotiate`}</CodeBlock>
       <p>
         Or use your preferred package manager:
       </p>
-      <div className="code-block">
-        <span className="green">$</span> pnpm add next-md-negotiate{"\n"}
-        <span className="green">$</span> yarn add next-md-negotiate{"\n"}
-        <span className="green">$</span> bun add next-md-negotiate
-      </div>
+      <CodeBlock>{`$ pnpm add next-md-negotiate
+$ yarn add next-md-negotiate
+$ bun add next-md-negotiate`}</CodeBlock>
 
       <h2>2. Initialize your project</h2>
       <p>
         The CLI auto-detects your project structure and creates all necessary files:
       </p>
-      <div className="code-block">
-        <span className="green">$</span> npx next-md-negotiate init
-      </div>
+      <CodeBlock>{`$ npx next-md-negotiate init`}</CodeBlock>
       <p>This command will:</p>
       <ol>
         <li>Detect whether you use App Router or Pages Router</li>
@@ -60,27 +55,14 @@ export default function QuickStartPage() {
       <p>
         Open <code>md.config.ts</code> and add a route:
       </p>
-      <div className="code-block">
-        <span className="keyword">import</span> {"{ "}
-        <span className="type">createMdVersion</span>
-        {" } "}
-        <span className="keyword">from</span>{" "}
-        <span className="string">{`'next-md-negotiate'`}</span>;{"\n\n"}
-        <span className="keyword">export const</span> mdConfig = [{"\n"}
-        {"  "}
-        <span className="function">createMdVersion</span>(
-        <span className="string">{`'/products/[productId]'`}</span>,{" "}
-        <span className="keyword">async</span> {"({ productId }) => {\n"}
-        {"    "}
-        <span className="keyword">const</span> product ={" "}
-        <span className="keyword">await</span> getProduct(productId);{"\n"}
-        {"    "}
-        <span className="keyword">return</span>{" "}
-        <span className="string">
-          {"`# ${product.name}\\n\\n**Price:** $${product.price}`"}
-        </span>
-        ;{"\n  }\n  ),\n];"}
-      </div>
+      <CodeBlock>{`import { createMdVersion } from 'next-md-negotiate';
+
+export const mdConfig = [
+  createMdVersion('/products/[productId]', async ({ productId }) => {
+    const product = await getProduct(productId);
+    return \`# \${product.name}\\n\\n**Price:** $\${product.price}\`;
+  }),
+];`}</CodeBlock>
 
       <p>
         The handler receives <strong>fully type-safe parameters</strong>{" "}
@@ -91,82 +73,41 @@ export default function QuickStartPage() {
 
       <h2>4. Test it</h2>
       <p>Start your dev server and test with curl:</p>
-      <div className="code-block">
-        <span className="comment">{"# Start the dev server"}</span>
-        {"\n"}
-        <span className="green">$</span> npm run dev{"\n\n"}
-        <span className="comment">
-          {"# Request markdown from your route"}
-        </span>
-        {"\n"}
-        <span className="green">$</span> curl -H{" "}
-        <span className="string">{`"Accept: text/markdown"`}</span>{" "}
-        localhost:3000/products/42{"\n\n"}
-        <span className="comment">{"# Response:"}</span>
-        {"\n"}
-        <span className="dim">{"# Product 42"}</span>
-        {"\n"}
-        <span className="dim">{"# "}</span>
-        {"\n"}
-        <span className="dim">{"# **Price:** $42.00"}</span>
-      </div>
+      <CodeBlock>{`# Start the dev server
+$ npm run dev
+
+# Request markdown from your route
+$ curl -H "Accept: text/markdown" localhost:3000/products/42
+
+# Response:
+# Product 42
+
+**Price:** $42.00`}</CodeBlock>
 
       <h2>5. Add LLM hints (optional)</h2>
       <p>
         Help AI agents discover that markdown is available by adding the{" "}
         <code>LlmHint</code> component to your pages:
       </p>
-      <div className="code-block">
-        <span className="keyword">import</span> {"{ "}
-        <span className="type">LlmHint</span>
-        {" } "}
-        <span className="keyword">from</span>{" "}
-        <span className="string">{`'next-md-negotiate'`}</span>;{"\n\n"}
-        <span className="keyword">export default function</span>{" "}
-        <span className="function">ProductPage</span>() {"{"}
-        {"\n"}
-        {"  "}
-        <span className="keyword">return</span> ({"\n"}
-        {"    <div>\n"}
-        {"      "}
-        <span className="green">{"<LlmHint />"}</span>
-        {"\n"}
-        {"      "}
-        <span className="dim">{"{ /* your page content */ }"}</span>
-        {"\n"}
-        {"    </div>\n"}
-        {"  );\n}"}
-      </div>
+      <CodeBlock>{`import { LlmHint } from 'next-md-negotiate';
+
+export default function ProductPage() {
+  return (
+    <div>
+      <LlmHint />
+      { /* your page content */ }
+    </div>
+  );
+}`}</CodeBlock>
       <p>
         Or run the CLI command to inject hints into all configured pages:
       </p>
-      <div className="code-block">
-        <span className="green">$</span> npx next-md-negotiate add-hints
-      </div>
+      <CodeBlock>{`$ npx next-md-negotiate add-hints`}</CodeBlock>
 
       <hr />
 
       <h2>Next steps</h2>
-      <div className="flex flex-col sm:flex-row gap-3 not-prose mt-4">
-        <Link
-          href="/docs/concepts"
-          className="border border-line rounded-lg px-4 py-3 font-mono text-sm text-fg-2 hover:text-t-green hover:border-t-green/30 transition-all"
-        >
-          Core Concepts →
-        </Link>
-        <Link
-          href="/docs/configuration"
-          className="border border-line rounded-lg px-4 py-3 font-mono text-sm text-fg-2 hover:text-t-green hover:border-t-green/30 transition-all"
-        >
-          Configuration →
-        </Link>
-        <Link
-          href="/docs/seo"
-          className="border border-line rounded-lg px-4 py-3 font-mono text-sm text-fg-2 hover:text-t-green hover:border-t-green/30 transition-all"
-        >
-          SEO & Crawling →
-        </Link>
-      </div>
+      <DocsPager />
     </div>
   );
 }

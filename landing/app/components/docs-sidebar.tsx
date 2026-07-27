@@ -2,42 +2,30 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const NAV_ITEMS = [
-  { title: "Overview", href: "/docs" },
-  { title: "Quick Start", href: "/docs/quickstart" },
-  { title: "Core Concepts", href: "/docs/concepts" },
-  { title: "SEO & Crawling", href: "/docs/seo" },
-  { title: "Configuration", href: "/docs/configuration" },
-  { title: "LLM Hints", href: "/docs/llm-hints" },
-  { title: "API Reference", href: "/docs/api" },
-];
+import { DOCS_NAV } from "../docs/nav";
 
 export function DocsSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-56 shrink-0 hidden lg:block">
-      <div className="sticky top-20">
-        <div className="font-mono text-[10px] text-fg-3 uppercase tracking-[0.12em] mb-3 pl-4">
+    <aside className="hidden w-48 shrink-0 lg:block">
+      <div className="sticky top-24">
+        <p className="mb-3 px-2 text-xs font-medium uppercase tracking-wider text-fg-3">
           Documentation
-        </div>
-        <nav className="border-l border-line">
-          {NAV_ITEMS.map((item) => {
+        </p>
+        <nav className="flex flex-col gap-0.5">
+          {DOCS_NAV.map((item) => {
             const active = pathname === item.href;
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`block py-1.5 pl-4 pr-2 font-mono text-[13px] transition-colors relative ${
+                className={`rounded-md px-2 py-1.5 text-sm transition-colors ${
                   active
-                    ? "text-t-green"
-                    : "text-fg-3 hover:text-fg-2"
+                    ? "bg-accent-soft font-medium text-accent"
+                    : "text-fg-2 hover:bg-surface-2 hover:text-fg"
                 }`}
               >
-                {active && (
-                  <span className="absolute left-0 top-0 bottom-0 w-px bg-t-green -translate-x-px" />
-                )}
                 {item.title}
               </Link>
             );
@@ -48,23 +36,22 @@ export function DocsSidebar() {
   );
 }
 
-/* Mobile navigation for docs */
 export function DocsMobileNav() {
   const pathname = usePathname();
 
   return (
-    <div className="lg:hidden mb-6 overflow-x-auto">
-      <div className="flex gap-1 pb-2 min-w-max">
-        {NAV_ITEMS.map((item) => {
+    <div className="mb-6 overflow-x-auto lg:hidden">
+      <div className="flex min-w-max gap-1 pb-1">
+        {DOCS_NAV.map((item) => {
           const active = pathname === item.href;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`px-3 py-1.5 rounded font-mono text-[11px] whitespace-nowrap transition-colors ${
+              className={`whitespace-nowrap rounded-md px-3 py-1.5 text-xs transition-colors ${
                 active
-                  ? "bg-t-green/10 text-t-green border border-t-green/20"
-                  : "text-fg-3 hover:text-fg-2 border border-transparent"
+                  ? "bg-accent-soft font-medium text-accent"
+                  : "text-fg-3 hover:bg-surface-2 hover:text-fg-2"
               }`}
             >
               {item.title}

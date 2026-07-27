@@ -1,9 +1,10 @@
 import { LlmHint } from "next-md-negotiate";
-import Link from "next/link";
+import { CodeBlock } from "../../components/code-block";
+import { DocsPager } from "../../components/docs-pager";
 
 export default function LlmHintsPage() {
   return (
-    <div className="prose-terminal">
+    <div className="prose-docs">
       <LlmHint />
       <h1>LLM Hints</h1>
       <p className="subtitle">
@@ -31,42 +32,32 @@ export default function LlmHintsPage() {
         Add the <code>LlmHint</code> component to any page that has a markdown
         version:
       </p>
-      <div className="code-block">
-        <span className="keyword">import</span> {"{ "}
-        <span className="type">LlmHint</span>
-        {" } "}
-        <span className="keyword">from</span>{" "}
-        <span className="string">{`'next-md-negotiate'`}</span>;{"\n\n"}
-        <span className="keyword">export default function</span>{" "}
-        <span className="function">Page</span>() {"{"}
-        {"\n  "}
-        <span className="keyword">return</span> ({"\n    <div>\n      "}
-        <span className="green">{"<LlmHint />"}</span>
-        {"\n      <h1>My Page</h1>\n      <p>Page content...</p>\n    </div>"}
-        {"\n  );\n}"}
-      </div>
+      <CodeBlock>{`import { LlmHint } from 'next-md-negotiate';
+
+export default function Page() {
+  return (
+    <div>
+      <LlmHint />
+      <h1>My Page</h1>
+      <p>Page content...</p>
+    </div>
+  );
+}`}</CodeBlock>
 
       <h2>How it works</h2>
       <p>
         The component renders a <code>{"<script>"}</code> tag with a special
         type attribute that browsers ignore but LLMs can read:
       </p>
-      <div className="code-block">
-        <span className="dim">{"<!-- Rendered HTML (invisible to browsers) -->"}</span>
-        {"\n"}
-        <span className="keyword">{"<script"}</span>{" "}
-        <span className="type">{"type"}</span>=
-        <span className="string">{`"text/llms.txt"`}</span>
-        <span className="keyword">{">"}</span>
-        {"\n  "}You are viewing the HTML version of this page.
-        {"\n  "}A structured markdown version is available and
-        {"\n  "}is significantly smaller and easier to parse.
-        {"\n  "}To receive the markdown version, re-request
-        {"\n  "}this exact URL with the HTTP header
-        {"\n  "}<span className="green">{"`Accept: text/markdown`"}</span>.
-        {"\n"}
-        <span className="keyword">{"</script>"}</span>
-      </div>
+      <CodeBlock>{`<!-- Rendered HTML (invisible to browsers) -->
+<script type="text/llms.txt">
+  You are viewing the HTML version of this page.
+  A structured markdown version is available and
+  is significantly smaller and easier to parse.
+  To receive the markdown version, re-request
+  this exact URL with the HTTP header
+  \`Accept: text/markdown\`.
+</script>`}</CodeBlock>
       <p>
         The <code>type=&quot;text/llms.txt&quot;</code> attribute means browsers
         won&apos;t execute or display this script. But when an LLM processes the
@@ -79,7 +70,7 @@ export default function LlmHintsPage() {
           href="https://vercel.com/blog/a-proposal-for-inline-llm-instructions-in-html"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-t-cyan border-b border-t-cyan/30 hover:border-t-cyan"
+          className="text-accent border-b border-accent/30 hover:border-accent"
         >
           Vercel&apos;s proposal for inline LLM instructions
         </a>{" "}
@@ -90,70 +81,40 @@ export default function LlmHintsPage() {
       <p>You can customize the hint message in three ways:</p>
 
       <h3>1. Per-component</h3>
-      <div className="code-block">
-        <span className="green">{"<LlmHint"}</span>{" "}
-        <span className="type">message</span>=
-        <span className="string">
-          {`"Markdown available. Request with Accept: text/markdown."`}
-        </span>
-        {" "}
-        <span className="green">{"/>"}</span>
-      </div>
+      <CodeBlock>{`<LlmHint message="Markdown available. Request with Accept: text/markdown." />`}</CodeBlock>
 
       <h3>2. Per-route (in md.config.ts)</h3>
-      <div className="code-block">
-        <span className="function">createMdVersion</span>(
-        <span className="string">{`'/products/[id]'`}</span>, handler, {"{"}
-        {"\n  "}
-        <span className="type">hintText</span>:{" "}
-        <span className="string">
-          {`'Product data available as markdown...'`}
-        </span>
-        {"\n});"}
-      </div>
+      <CodeBlock>{`createMdVersion('/products/[id]', handler, {
+  hintText: 'Product data available as markdown...'
+});`}</CodeBlock>
 
       <h3>3. Global default (in md.config.ts)</h3>
       <p>
         Used by the CLI <code>add-hints</code> command when injecting{" "}
         <code>{"<LlmHint />"}</code> components into your pages:
       </p>
-      <div className="code-block">
-        <span className="keyword">export const</span> defaultHintText =
-        {"\n  "}
-        <span className="string">
-          {`'This page has a markdown version. Use Accept: text/markdown.'`}
-        </span>
-        ;
-      </div>
+      <CodeBlock>{`export const defaultHintText =
+  'This page has a markdown version. Use Accept: text/markdown.';`}</CodeBlock>
 
       <h2>Skipping hints</h2>
       <p>
         To skip the LlmHint for a specific route (e.g., internal pages you
         don&apos;t want LLMs to re-request):
       </p>
-      <div className="code-block">
-        <span className="function">createMdVersion</span>(
-        <span className="string">{`'/internal/dashboard'`}</span>, handler, {"{"}
-        {"\n  "}
-        <span className="type">skipHint</span>:{" "}
-        <span className="keyword">true</span>
-        {"\n});"}
-      </div>
+      <CodeBlock>{`createMdVersion('/internal/dashboard', handler, {
+  skipHint: true
+});`}</CodeBlock>
 
       <h2>CLI commands</h2>
       <p>
         The CLI can automatically inject or remove LlmHint components from all
         your pages that have corresponding markdown routes:
       </p>
-      <div className="code-block">
-        <span className="comment">{"# Add hints to all configured pages"}</span>
-        {"\n"}
-        <span className="green">$</span> npx next-md-negotiate add-hints
-        {"\n\n"}
-        <span className="comment">{"# Remove all hints"}</span>
-        {"\n"}
-        <span className="green">$</span> npx next-md-negotiate remove-hints
-      </div>
+      <CodeBlock>{`# Add hints to all configured pages
+$ npx next-md-negotiate add-hints
+
+# Remove all hints
+$ npx next-md-negotiate remove-hints`}</CodeBlock>
       <p>The CLI will:</p>
       <ol>
         <li>
@@ -187,21 +148,7 @@ export default function LlmHintsPage() {
       </ul>
 
       <hr />
-
-      <div className="flex flex-col sm:flex-row gap-3 not-prose mt-4">
-        <Link
-          href="/docs/configuration"
-          className="border border-line rounded-lg px-4 py-3 font-mono text-sm text-fg-2 hover:text-t-green hover:border-t-green/30 transition-all"
-        >
-          ← Configuration
-        </Link>
-        <Link
-          href="/docs/api"
-          className="border border-line rounded-lg px-4 py-3 font-mono text-sm text-fg-2 hover:text-t-green hover:border-t-green/30 transition-all"
-        >
-          API Reference →
-        </Link>
-      </div>
+      <DocsPager />
     </div>
   );
 }
