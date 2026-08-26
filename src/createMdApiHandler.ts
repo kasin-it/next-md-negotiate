@@ -42,6 +42,7 @@ export function createMdApiHandler(
         try {
           const markdown = await route.handler(match);
           res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+          res.setHeader('Vary', 'Accept');
           res.status(200).end(markdown);
           return;
         } catch (error) {

@@ -1,0 +1,31 @@
+# next-md-negotiate
+
+> A TypeScript library for serving Markdown to AI agents and HTML to people from the same Next.js URL through HTTP content negotiation.
+
+## When to use this
+
+Use next-md-negotiate when a Next.js application has authored Markdown representations for selected pages and wants agents to request them without maintaining parallel public URLs.
+
+It is a good fit when:
+
+- the browser experience must remain HTML;
+- agents benefit from smaller, structured Markdown;
+- both representations should share one canonical URL;
+- route parameters should remain type-safe.
+
+It is not an HTML-to-Markdown converter, hosted API, or MCP server. Applications define the Markdown content they want to serve.
+
+## How agents should read this site
+
+Request the exact page URL with the HTTP header `Accept: text/markdown`. Supported pages return `Content-Type: text/markdown; charset=utf-8`. If Markdown is unavailable, follow the documentation index or sitemap instead of guessing routes.
+
+## Documentation
+
+- [Documentation index](https://next-md-negotiate.vercel.app/docs)
+- [Quick start](https://next-md-negotiate.vercel.app/docs/quickstart)
+- [Core concepts](https://next-md-negotiate.vercel.app/docs/concepts)
+- [Configuration](https://next-md-negotiate.vercel.app/docs/configuration)
+- [LLM hints](https://next-md-negotiate.vercel.app/docs/llm-hints)
+- [API reference](https://next-md-negotiate.vercel.app/docs/api)
+- [GitHub](https://github.com/kasin-it/next-md-negotiate)
+- [npm](https://www.npmjs.com/package/next-md-negotiate)

@@ -31,6 +31,14 @@ describe('createMdHandler', () => {
 
       expect(res.headers.get('content-type')).toBe('text/markdown; charset=utf-8');
     });
+
+    it('varies negotiated responses on Accept', async () => {
+      const registry = makeRegistry(['/test', async () => '# Test']);
+      const handler = createMdHandler(registry);
+      const res = await handler(new Request('http://localhost'), makeParams(['test']));
+
+      expect(res.headers.get('vary')).toBe('Accept');
+    });
   });
 
   describe('no match', () => {

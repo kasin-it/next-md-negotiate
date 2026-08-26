@@ -57,6 +57,17 @@ describe('createMdApiHandler', () => {
 
       expect(res.headers['Content-Type']).toBe('text/markdown; charset=utf-8');
     });
+
+    it('varies negotiated responses on Accept', async () => {
+      const registry = makeRegistry(['/test', async () => '# Test']);
+      const handler = createMdApiHandler(registry);
+      const req = makeReq(['test']);
+      const res = makeRes();
+
+      await handler(req, res);
+
+      expect(res.headers.Vary).toBe('Accept');
+    });
   });
 
   describe('no match', () => {

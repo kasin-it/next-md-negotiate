@@ -33,6 +33,7 @@ export function createMdHandler(
           const markdown = await route.handler(match);
           const headers = new Headers();
           headers.set('Content-Type', 'text/markdown; charset=utf-8');
+          headers.set('Vary', 'Accept');
           return new Response(markdown, { status: 200, headers });
         } catch (error) {
           console.error('[next-md-negotiate] Handler error:', error);
